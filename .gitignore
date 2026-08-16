@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment files & Secrets (STRICT SECURITY)
+.env
+.env.*
+!.env.example
+*.env
+**/.env
+**/.env.*
+!**/.env.example
+
+# Builds & Outputs
+dist/
+**/dist/
+.next/
+**/.next/
+out/
+**/out/
+
+# Logs & OS Files
+*.log
+**/*.log
+.DS_Store
+Thumbs.db
