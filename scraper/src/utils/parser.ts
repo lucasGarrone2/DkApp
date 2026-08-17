@@ -11,25 +11,42 @@ export function cleanText(text: string | null | undefined): string {
 
 /**
  * Parses a Danish/International price string into a number.
+ * Handles Danish (12.000 kr, 12000 DKK) and English (kr4,500, kr24,500, 4,500 kr)
  */
 export function parsePrice(text: string | null | undefined): number | null {
   if (!text) return null;
   const cleaned = cleanText(text);
 
-  const match1 = cleaned.match(/([\d\.\s,]+)\s*(?:kr|dkk)/i);
-  if (match1 && match1[1]) {
-    const rawNum = match1[1].replace(/[\s\.]/g, '').replace(/,/g, '.');
-    const price = parseInt(rawNum, 10);
-    if (!isNaN(price) && price >= 3000 && price <= 65000) return price;
+  // Match: kr4,500 / kr 12.000 / DKK 15,000 / 12.000 kr / 4,500 dkk
+  const patterns = [
+    /(?:dkk|kr\.?)\s*([\d\.\,]+)/i,
+    /([\d\.\,]+)\s*(?:kr|dkk)/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = cleaned.match(pattern);
+    if (match && match[1]) {
+      let raw = match[1].trim();
+
+      // If comma is followed by 3 digits at the end (e.g. 4,500 or 24,500), it's thousands separator
+      if (/,\d{3}(?!\d)/.test(raw)) {
+        raw = raw.replace(/,/g, '');
+      }
+      // If dot is followed by 3 digits at the end (e.g. 4.500 or 24.000), it's thousands separator
+      if (/\.\d{3}(?!\d)/.test(raw)) {
+        raw = raw.replace(/\./g, '');
+      }
+      // Remove any remaining spaces and replace commas with dots
+      raw = raw.replace(/[\s\.]/g, '').replace(/,/g, '.');
+
+      const price = parseInt(raw, 10);
+      if (!isNaN(price) && price >= 3000 && price <= 65000) {
+        return price;
+      }
+    }
   }
 
-  const match2 = cleaned.match(/(?:dkk|kr\.?)\s*([\d\.\s,]+)/i);
-  if (match2 && match2[1]) {
-    const rawNum = match2[1].replace(/[\s\.]/g, '').replace(/,/g, '.');
-    const price = parseInt(rawNum, 10);
-    if (!isNaN(price) && price >= 3000 && price <= 65000) return price;
-  }
-
+  // Fallback: extract digits if short string
   if (cleaned.length < 15) {
     const digitsOnly = cleaned.replace(/[^0-9]/g, '');
     if (digitsOnly) {
@@ -59,14 +76,23 @@ export function parseSize(text: string | null | undefined): number | null {
 
 /**
  * Parses rooms string into a number.
+ * Supports: "1 room", "2 rooms", "3 værelser", "Rooms 2", "2 bed"
  */
 export function parseRooms(text: string | null | undefined): number | null {
   if (!text) return null;
   const cleaned = cleanText(text).toLowerCase();
 
-  const match = cleaned.match(/(\d+(?:\.\d+)?)\s*(vær|værelser|rooms|v|bedrooms|bed|rum)/);
-  if (match && match[1]) {
-    const rooms = parseFloat(match[1]);
+  // Pattern 1: "2 rooms", "1 room", "3 værelser", "2 bed"
+  const match1 = cleaned.match(/(\d+(?:\.\d+)?)\s*(?:vær|værelser|rooms?|v|bedrooms?|bed|rum)/i);
+  if (match1 && match1[1]) {
+    const rooms = parseFloat(match1[1]);
+    if (!isNaN(rooms) && rooms > 0 && rooms <= 15) return rooms;
+  }
+
+  // Pattern 2: "Rooms 2", "Værelser: 3"
+  const match2 = cleaned.match(/(?:rooms?|værelser?|rum)\s*:?\s*(\d+)/i);
+  if (match2 && match2[1]) {
+    const rooms = parseInt(match2[1], 10);
     if (!isNaN(rooms) && rooms > 0 && rooms <= 15) return rooms;
   }
 

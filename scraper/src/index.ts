@@ -1,6 +1,7 @@
 import { createBrowser } from './utils/browser';
 import { EdcScraper } from './scrapers/edc';
 import { HousingAnywhereScraper } from './scrapers/housinganywhere';
+import { KvikboligScraper } from './scrapers/kvikbolig';
 import { DbaScraper } from './scrapers/dba';
 import { LejeboligScraper } from './scrapers/lejebolig';
 import { upsertListings } from './supabase';
@@ -14,29 +15,35 @@ async function main() {
   const allListings: ListingInput[] = [];
 
   try {
-    // 1. Run EDC Scraper (Largest DK real estate network, ~1.800 rentals in Copenhagen)
-    const edc = new EdcScraper(browser);
-    const edcListings = await edc.scrape();
-    allListings.push(...edcListings);
+    // 1. Run Kvikbolig Scraper (Authenticated with user account)
+    const kvik = new KvikboligScraper(browser);
+    const kvikListings = await kvik.scrape();
+    allListings.push(...kvikListings);
 
     // 2. Run HousingAnywhere Scraper (Verified apartments & Working Holiday rentals in CPH)
     const ha = new HousingAnywhereScraper(browser);
     const haListings = await ha.scrape();
     allListings.push(...haListings);
 
-    // 3. Run DBA Scraper
+    // 3. Run EDC Scraper (Largest DK real estate network)
+    const edc = new EdcScraper(browser);
+    const edcListings = await edc.scrape();
+    allListings.push(...edcListings);
+
+    // 4. Run DBA Scraper
     const dba = new DbaScraper(browser);
     const dbaListings = await dba.scrape();
     allListings.push(...dbaListings);
 
-    // 4. Run Lejebolig Scraper
+    // 5. Run Lejebolig Scraper
     const leje = new LejeboligScraper(browser);
     const lejeListings = await leje.scrape();
     allListings.push(...lejeListings);
 
     console.log(`\n📊 Scraping Summary:`);
-    console.log(`- EDC.dk: ${edcListings.length} listings`);
+    console.log(`- Kvikbolig.dk: ${kvikListings.length} listings`);
     console.log(`- HousingAnywhere: ${haListings.length} listings`);
+    console.log(`- EDC.dk: ${edcListings.length} listings`);
     console.log(`- DBA.dk: ${dbaListings.length} listings`);
     console.log(`- Lejebolig.dk: ${lejeListings.length} listings`);
     console.log(`- Total Extracted: ${allListings.length} listings`);

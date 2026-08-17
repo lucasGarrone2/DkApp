@@ -15,4 +15,6 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 export const config = {
   supabaseUrl: SUPABASE_URL,
   supabaseServiceKey: SUPABASE_SERVICE_KEY,
+  kvikboligEmail: process.env.KVIKBOLIG_EMAIL || 'lucasgarrone4@gmail.com',
+  kvikboligPassword: process.env.KVIKBOLIG_PASSWORD || 'Futbolteamo#2',
 };

@@ -43,6 +43,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          KVIKBOLIG_EMAIL: ${{ secrets.KVIKBOLIG_EMAIL }}
+          KVIKBOLIG_PASSWORD: ${{ secrets.KVIKBOLIG_PASSWORD }}
         run: |
           cd scraper
           npm run scrape
