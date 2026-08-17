@@ -19,25 +19,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install System Dependencies for Puppeteer Headless Chrome
+      - name: Install Google Chrome Stable
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            libnss3 \
-            libatk-bridge2.0-0 \
-            libxcomposite1 \
-            libxdamage1 \
-            libxrandr2 \
-            libgbm1 \
-            libasound2 \
-            libpangocairo-1.0-0 \
-            libgtk-3-0
+          sudo apt-get install -y google-chrome-stable || true
 
-      - name: Install Node Dependencies & Puppeteer Chrome
+      - name: Install Node Dependencies & Puppeteer Browsers
         run: |
           cd scraper
           npm ci
-          npx puppeteer install
+          npx puppeteer browsers install chrome
 
       - name: Run Scraper Pipeline
         env:
