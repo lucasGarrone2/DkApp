@@ -14,7 +14,7 @@ const USER_AGENTS = [
 ];
 
 /**
- * Creates and configures a Puppeteer browser instance
+ * Creates and configures a Puppeteer browser instance optimized for Headless Linux & Windows
  */
 export async function createBrowser(): Promise<Browser> {
   const browser = await puppeteer.launch({
@@ -22,6 +22,8 @@ export async function createBrowser(): Promise<Browser> {
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
       '--disable-web-security',
       '--disable-features=IsolateOrigins,site-per-process',
       '--window-size=1920,1080',
