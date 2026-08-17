@@ -24,12 +24,18 @@ export class HousingAnywhereScraper extends BaseScraper {
   name = 'HousingAnywhere';
   private browser: Browser;
 
+  // Comprehensive neighborhood & category endpoints across Copenhagen
   private targetUrls = [
     'https://housinganywhere.com/s/Copenhagen--Denmark',
     'https://housinganywhere.com/s/Copenhagen--Denmark?categories=apartment',
     'https://housinganywhere.com/s/Copenhagen--Denmark?categories=room',
+    'https://housinganywhere.com/s/Copenhagen--Denmark?categories=studio',
     'https://housinganywhere.com/s/Frederiksberg--Denmark',
-    'https://housinganywhere.com/s/Copenhagen--Denmark?categories=studio'
+    'https://housinganywhere.com/s/Amager--Denmark',
+    'https://housinganywhere.com/s/Valby--Denmark',
+    'https://housinganywhere.com/s/Vesterbro--Denmark',
+    'https://housinganywhere.com/s/N%C3%B8rrebro--Denmark',
+    'https://housinganywhere.com/s/Østerbro--Denmark'
   ];
 
   constructor(browser: Browser) {
@@ -47,7 +53,7 @@ export class HousingAnywhereScraper extends BaseScraper {
 
         try {
           await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 35000 });
-          await this.delay(3000, 4500);
+          await this.delay(2500, 4000);
 
           try {
             const cookieBtn = await page.$('button[id*="accept"], button[class*="accept"]');
@@ -65,7 +71,7 @@ export class HousingAnywhereScraper extends BaseScraper {
           this.log(`⚠️ Error on URL ${url}: ${(subErr as Error).message}`);
         }
 
-        await this.delay(2000, 3500);
+        await this.delay(1500, 3000);
       }
     } catch (error) {
       this.log(`❌ Error scraping HousingAnywhere: ${(error as Error).message}`);
@@ -151,7 +157,7 @@ export class HousingAnywhereScraper extends BaseScraper {
             title: `HousingAnywhere: ${title}`,
             url: item.url,
             price_dkk: price,
-            deposit_dkk: price, // HousingAnywhere typically has 1 month deposit
+            deposit_dkk: price,
             rooms,
             size_m2: size,
             location_name: locationName,
