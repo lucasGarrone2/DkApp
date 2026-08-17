@@ -14,8 +14,9 @@ const TRANSIT_ZONES = ['Valby', 'Vanløse', 'Sydhavn', 'Nordvest'];
 /**
  * Calculates a personalized recommendation score (0-100) for a group of 3 people
  * (couple + 1 single friend) on a Working Holiday in Copenhagen.
+ * Rule: Cost over 8.000 DKK/person can NEVER be "Muy Recomendado".
  */
-export function calculateListingMatch(listing: Listing): RecommendationResult {
+export function calculateListingMatch(listing: Listing, peopleCount: number = 3): RecommendationResult {
   let score = 50; // Neutral baseline
   const pros: string[] = [];
   const cons: string[] = [];
@@ -71,21 +72,29 @@ export function calculateListingMatch(listing: Listing): RecommendationResult {
   }
 
   // ==========================================
-  // 4. MONTHLY RENT & COST PER PERSON (Divided by 3)
+  // 4. MONTHLY RENT & COST PER PERSON
+  // Rule: > 8.000 DKK/person is penalized and cannot be "Muy Recomendado"
   // ==========================================
   const price = listing.price_dkk;
-  if (price && price > 0) {
-    const costPerPerson = Math.round(price / 3);
+  let isOverBudget = false;
 
-    if (price <= 14000) {
-      score += 20;
-      pros.push(`Excelente precio por persona (${costPerPerson.toLocaleString('da-DK')} DKK / mes por persona)`);
-    } else if (price <= 18000) {
-      score += 10;
+  if (price && price > 0) {
+    const costPerPerson = Math.round(price / peopleCount);
+
+    if (costPerPerson <= 4500) {
+      score += 25;
+      pros.push(`Excelente precio accesible (${costPerPerson.toLocaleString('da-DK')} DKK / mes por persona)`);
+    } else if (costPerPerson <= 6500) {
+      score += 15;
       pros.push(`Precio razonable (${costPerPerson.toLocaleString('da-DK')} DKK / mes por persona)`);
-    } else if (price > 22000) {
-      score -= 15;
-      cons.push(`Precio elevado (${costPerPerson.toLocaleString('da-DK')} DKK / mes por persona)`);
+    } else if (costPerPerson <= 8000) {
+      score += 5;
+      pros.push(`Dentro del tope presupuestario (${costPerPerson.toLocaleString('da-DK')} DKK / mes por persona)`);
+    } else {
+      // Over 8.000 DKK / person
+      score -= 30;
+      isOverBudget = true;
+      cons.push(`Supera los 8.000 DKK/persona (${costPerPerson.toLocaleString('da-DK')} DKK / mes por persona)`);
     }
   }
 
@@ -107,6 +116,11 @@ export function calculateListingMatch(listing: Listing): RecommendationResult {
 
   // Bound score between 0 and 100
   score = Math.max(0, Math.min(100, score));
+
+  // Hard Cap: If cost per person > 8000 DKK or no CPR, cap score below 80 ("Muy Recomendado")
+  if (isOverBudget || listing.cpr_allowed === false) {
+    score = Math.min(score, 74);
+  }
 
   // Determine Label & Badge Variant
   let label: RecommendationResult['label'] = 'No Recomendado';

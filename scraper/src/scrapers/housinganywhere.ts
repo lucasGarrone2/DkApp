@@ -24,6 +24,14 @@ export class HousingAnywhereScraper extends BaseScraper {
   name = 'HousingAnywhere';
   private browser: Browser;
 
+  private targetUrls = [
+    'https://housinganywhere.com/s/Copenhagen--Denmark',
+    'https://housinganywhere.com/s/Copenhagen--Denmark?categories=apartment',
+    'https://housinganywhere.com/s/Copenhagen--Denmark?categories=room',
+    'https://housinganywhere.com/s/Frederiksberg--Denmark',
+    'https://housinganywhere.com/s/Copenhagen--Denmark?categories=studio'
+  ];
+
   constructor(browser: Browser) {
     super();
     this.browser = browser;
@@ -34,24 +42,31 @@ export class HousingAnywhereScraper extends BaseScraper {
     const page = await createPage(this.browser);
 
     try {
-      const url = 'https://housinganywhere.com/s/Copenhagen--Denmark';
-      this.log(`🕵️ Scraping HousingAnywhere: ${url}`);
+      for (const url of this.targetUrls) {
+        this.log(`🕵️ Scraping HousingAnywhere: ${url}`);
 
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await this.delay(3500, 5000);
+        try {
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 35000 });
+          await this.delay(3000, 4500);
 
-      try {
-        const cookieBtn = await page.$('button[id*="accept"], button[class*="accept"]');
-        if (cookieBtn) {
-          await cookieBtn.click();
-          await this.delay(1000);
+          try {
+            const cookieBtn = await page.$('button[id*="accept"], button[class*="accept"]');
+            if (cookieBtn) {
+              await cookieBtn.click();
+              await this.delay(1000);
+            }
+          } catch (_) {}
+
+          const rawItems = await this.extractRawItems(page);
+          const transformed = this.transformRawItems(rawItems);
+          this.log(`✅ Extracted ${transformed.length} real rental apartments from ${url}`);
+          listings.push(...transformed);
+        } catch (subErr) {
+          this.log(`⚠️ Error on URL ${url}: ${(subErr as Error).message}`);
         }
-      } catch (_) {}
 
-      const rawItems = await this.extractRawItems(page);
-      const transformed = this.transformRawItems(rawItems);
-      this.log(`✅ Extracted ${transformed.length} real rental apartments from HousingAnywhere`);
-      listings.push(...transformed);
+        await this.delay(2000, 3500);
+      }
     } catch (error) {
       this.log(`❌ Error scraping HousingAnywhere: ${(error as Error).message}`);
     } finally {

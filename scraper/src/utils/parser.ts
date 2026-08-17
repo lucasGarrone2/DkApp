@@ -20,21 +20,21 @@ export function parsePrice(text: string | null | undefined): number | null {
   if (match1 && match1[1]) {
     const rawNum = match1[1].replace(/[\s\.]/g, '').replace(/,/g, '.');
     const price = parseInt(rawNum, 10);
-    if (!isNaN(price) && price > 500 && price < 200000) return price;
+    if (!isNaN(price) && price >= 3000 && price <= 65000) return price;
   }
 
   const match2 = cleaned.match(/(?:dkk|kr\.?)\s*([\d\.\s,]+)/i);
   if (match2 && match2[1]) {
     const rawNum = match2[1].replace(/[\s\.]/g, '').replace(/,/g, '.');
     const price = parseInt(rawNum, 10);
-    if (!isNaN(price) && price > 500 && price < 200000) return price;
+    if (!isNaN(price) && price >= 3000 && price <= 65000) return price;
   }
 
   if (cleaned.length < 15) {
     const digitsOnly = cleaned.replace(/[^0-9]/g, '');
     if (digitsOnly) {
       const price = parseInt(digitsOnly, 10);
-      if (!isNaN(price) && price > 500 && price < 200000) return price;
+      if (!isNaN(price) && price >= 3000 && price <= 65000) return price;
     }
   }
 
@@ -51,7 +51,7 @@ export function parseSize(text: string | null | undefined): number | null {
   const match = cleaned.match(/(\d+)\s*(m²|m2|kvm)/);
   if (match && match[1]) {
     const size = parseInt(match[1], 10);
-    if (!isNaN(size) && size > 10 && size < 1000) return size;
+    if (!isNaN(size) && size >= 10 && size <= 600) return size;
   }
 
   return null;
@@ -67,7 +67,7 @@ export function parseRooms(text: string | null | undefined): number | null {
   const match = cleaned.match(/(\d+(?:\.\d+)?)\s*(vær|værelser|rooms|v|bedrooms|bed|rum)/);
   if (match && match[1]) {
     const rooms = parseFloat(match[1]);
-    if (!isNaN(rooms) && rooms > 0 && rooms < 20) return rooms;
+    if (!isNaN(rooms) && rooms > 0 && rooms <= 15) return rooms;
   }
 
   return null;
@@ -75,13 +75,11 @@ export function parseRooms(text: string | null | undefined): number | null {
 
 /**
  * PHASE 2: Detects CPR registration availability from text
- * returns true if CPR is allowed, false if explicitly forbidden, null if unknown
  */
 export function parseCprAllowed(text: string | null | undefined): boolean | null {
   if (!text) return null;
   const t = text.toLowerCase();
 
-  // Explicitly forbidden CPR
   if (
     t.includes('ingen cpr') ||
     t.includes('uden cpr') ||
@@ -93,7 +91,6 @@ export function parseCprAllowed(text: string | null | undefined): boolean | null
     return false;
   }
 
-  // Allowed CPR
   if (
     t.includes('cpr muligt') ||
     t.includes('cpr possible') ||
@@ -169,7 +166,6 @@ export function parsePrepaidRent(text: string | null | undefined, monthlyPrice?:
   if (!text) return 0;
   const t = text.toLowerCase();
 
-  // Try extracting exact amount: "forudbetalt leje 12.000 kr"
   const match = t.match(/forudbetalt\s*(?:leje)?\s*:?\s*([\d\.]+)\s*(?:kr|dkk)/i);
   if (match && match[1]) {
     const rawNum = match[1].replace(/\./g, '');
@@ -179,7 +175,6 @@ export function parsePrepaidRent(text: string | null | undefined, monthlyPrice?:
     }
   }
 
-  // Try extracting number of prepaid months: "3 mdrs. forudbetalt leje"
   const monthMatch = t.match(/(\d+)\s*(?:måneders?|mdrs?\.?|mdr\.?)\s*forudbetalt/i);
   if (monthMatch && monthMatch[1] && monthlyPrice) {
     const months = parseInt(monthMatch[1], 10);
@@ -191,27 +186,54 @@ export function parsePrepaidRent(text: string | null | undefined, monthlyPrice?:
   return 0;
 }
 
+const NON_HOUSING_REGEXES = [
+  /\blego\b/i, /\btoyota\b/i, /\baudi\b/i, /\bbmw\b/i, /\bmercedes\b/i, /\bvolkswagen\b/i, /\bvolvo\b/i, /\bford\b/i,
+  /\bfælge\b/i, /\balufælge\b/i, /\bhjul\b/i, /\bdæk\b/i, /\bcykel\b/i, /\bcykler\b/i, /\btøj\b/i, /\bsko\b/i,
+  /\bstøvler\b/i, /\bsneakers\b/i, /\btaske\b/i, /\bjakke\b/i, /\bbukser\b/i, /\bkjole\b/i, /\btrøje\b/i,
+  /\bsofa\b/i, /\bstol\b/i, /\bstole\b/i, /\bbord\b/i, /\bborde\b/i, /\blampe\b/i, /\blamper\b/i, /\bskab\b/i,
+  /\breol\b/i, /\bkommode\b/i, /\bseng\b/i, /\bmadras\b/i, /\bspejl\b/i, /\btæppe\b/i, /\btv\b/i, /\bfjernsyn\b/i,
+  /\bhøjttaler\b/i, /\biphone\b/i, /\bipad\b/i, /\bmacbook\b/i, /\bcomputer\b/i, /\btelefon\b/i, /\bplaystation\b/i,
+  /\bnintendo\b/i, /\bxbox\b/i, /\bur\b/i, /\bure\b/i, /\bsmykker\b/i, /\bring\b/i, /\bporcelæn\b/i, /\bglas\b/i,
+  /\bkrus\b/i, /\bkopper\b/i, /\btallerken\b/i, /\bbestik\b/i, /\bgryde\b/i, /\bpande\b/i, /\bgrill\b/i,
+  /\bplakat\b/i, /\bmaleri\b/i, /\bbog\b/i, /\bbøger\b/i, /\btegneserie\b/i, /\bdvd\b/i, /\bcd\b/i, /\bvinyl\b/i,
+  /\blegetøj\b/i, /\bfigur\b/i, /\bdukke\b/i, /\bbamse\b/i, /\bbarnevogn\b/i, /\bautostol\b/i, /\bbåd\b/i,
+  /\bmotorcykel\b/i, /\bknallert\b/i, /\bscooter\b/i, /\btraktor\b/i, /\btrailer\b/i, /\bcampingvogn\b/i,
+  /\breservedele\b/i, /\btanke\b/i, /\bmassegæringstanke\b/i, /\bquooker\b/i, /\bpuslespil\b/i, /\bcrosstrainer\b/i
+];
+
+const HOUSING_REGEXES = [
+  /\blejlighed\b/i, /\blejligheder\b/i, /\bværelse\b/i, /\bværelser\b/i, /\bbolig\b/i, /\bboliger\b/i,
+  /\bapartment\b/i, /\bapartments\b/i, /\broom\b/i, /\brooms\b/i, /\bstudio\b/i, /\brækkehus\b/i,
+  /\bvilla\b/i, /\blejemål\b/i, /\bfremleje\b/i, /\bleje\b/i, /\bkvm\b/i, /\bm²\b/i, /\bm2\b/i,
+  /\bkøbenhavn\b/i, /\bvesterbro\b/i, /\bnørrebro\b/i, /\bøsterbro\b/i, /\bamager\b/i, /\bfrederiksberg\b/i,
+  /\bvalby\b/i, /\bvanløse\b/i, /\bnordvest\b/i, /\bsydhavn\b/i, /\bgentofte\b/i, /\bhellerup\b/i,
+  /\blyngby\b/i, /\bglostrup\b/i, /\bhvidovre\b/i, /\brødovre\b/i, /\bherlev\b/i, /\bballerup\b/i,
+  /\ballé\b/i, /\bgade\b/i, /\bvej\b/i, /\bhave\b/i
+];
+
 /**
- * Ensures non-housing items are 100% excluded.
+ * Exact Word-Boundary Real Housing Validator:
+ * Ensures ONLY real housing passes and marketplace items are 100% eliminated.
  */
-export function isRealRentalListing(title: string | null | undefined, priceDkk: number | null): boolean {
+export function isRealRentalListing(title: string | null | undefined, priceDkk: number | null, isDedicatedPortal = false): boolean {
   if (!title) return false;
-  const t = title.toLowerCase();
+  const t = cleanText(title);
 
-  const nonHousingKeywords = [
-    'crosstrainer', 'cykel', 'sko', 'støvler', 'kalender', 'puslespil',
-    'stof', 'kjole', 'jakke', 'dragt', 'quooker', 'porcelæn', 'vhs',
-    'poker', 'hjelm', 'badestol', 'stumtjener', 'rygsæk', 'kuglegrill',
-    'mærker', 'fælge', 'dæk', 'kopper', 'sengegavl', 'sneakers',
-    'model', 'manga', 'postkort', 'krus', 'bakke', 'skål', 'højttaler', 'jeans',
-    'bil', 'vespa', 'knallert', 'tilbehør', ' reservedele'
-  ];
-
-  if (nonHousingKeywords.some(word => t.includes(word))) {
+  // 1. Must NEVER match any non-housing marketplace item (using word boundaries)
+  if (NON_HOUSING_REGEXES.some(regex => regex.test(t))) {
     return false;
   }
 
-  if (priceDkk !== null && (priceDkk < 3000 || priceDkk > 55000)) {
+  // 2. If from general marketplace (like DBA), MUST match housing vocabulary
+  if (!isDedicatedPortal) {
+    const hasHousingWord = HOUSING_REGEXES.some(regex => regex.test(t));
+    if (!hasHousingWord) {
+      return false;
+    }
+  }
+
+  // 3. Price validation
+  if (priceDkk !== null && (priceDkk < 3000 || priceDkk > 65000)) {
     return false;
   }
 

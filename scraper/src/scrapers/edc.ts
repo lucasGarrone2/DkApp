@@ -11,6 +11,7 @@ import {
   parseFurnished,
   parseRentalPeriod,
   parsePrepaidRent,
+  isRealRentalListing,
 } from '../utils/parser';
 import { normalizeLocation } from '../utils/location';
 
@@ -23,7 +24,7 @@ interface RawEdcItem {
 export class EdcScraper extends BaseScraper {
   name = 'EDC.dk';
   private browser: Browser;
-  private maxPages = 3;
+  private maxPages = 4;
 
   constructor(browser: Browser) {
     super();
@@ -41,9 +42,8 @@ export class EdcScraper extends BaseScraper {
           : `https://www.edc.dk/lejebolig/koebenhavn/?side=${pageNum}`;
 
         this.log(`🕵️ Scraping EDC page ${pageNum}: ${url}`);
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await this.delay(2500, 4000);
-
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 35000 });
+        
         try {
           const cookieBtn = await page.$('#coiPage-1 .coi-banner__accept, button[id*="accept"], button[class*="accept"]');
           if (cookieBtn) {
@@ -52,13 +52,16 @@ export class EdcScraper extends BaseScraper {
           }
         } catch (_) {}
 
+        await page.waitForSelector('a[href*="/sag/"], a[href*="/leje/lejlighed/"]', { timeout: 6000 }).catch(() => {});
+        await this.delay(2000, 3000);
+
         const rawItems = await this.extractRawItems(page);
         const pageListings = this.transformRawItems(rawItems);
         this.log(`✅ Extracted ${pageListings.length} real rental apartments from page ${pageNum}`);
         listings.push(...pageListings);
 
         if (pageNum < this.maxPages && pageListings.length > 0) {
-          await this.delay(2500, 4500);
+          await this.delay(2000, 3500);
         } else if (pageListings.length === 0) {
           break;
         }
@@ -135,7 +138,7 @@ export class EdcScraper extends BaseScraper {
             title = parts.join(' ');
           }
 
-          if (!price || price < 3000 || price > 55000) {
+          if (!price || !isRealRentalListing(title, price, true)) {
             return null;
           }
 
@@ -151,7 +154,7 @@ export class EdcScraper extends BaseScraper {
             title: `EDC: ${title}`,
             url: item.url,
             price_dkk: price,
-            deposit_dkk: Math.round(price * 3), // EDC deposit standard is 3 months
+            deposit_dkk: Math.round(price * 3), // EDC standard deposit
             rooms,
             size_m2: size,
             location_name: locationName,

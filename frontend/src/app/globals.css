@@ -31,8 +31,8 @@
 
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
@@ -51,5 +51,12 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .custom-sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-sidebar-scroll::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 dark:bg-slate-700 rounded-full;
   }
 }

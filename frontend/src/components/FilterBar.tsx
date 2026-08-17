@@ -46,6 +46,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
 
   return (
     <div className="w-full flex-shrink-0">
+      {/* Mobile Toggle Button */}
       <button 
         className="lg:hidden w-full py-3 px-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-800 dark:text-slate-200 mb-4 flex justify-between items-center shadow-sm"
         onClick={() => setIsOpen(!isOpen)}
@@ -54,12 +55,13 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
         <span>{isOpen ? '▲' : '▼'}</span>
       </button>
 
-      <div className={`space-y-6 lg:block ${isOpen ? 'block' : 'hidden'} bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm`}>
+      {/* Independently Scrollable Sticky Sidebar */}
+      <div className={`space-y-6 lg:block ${isOpen ? 'block' : 'hidden'} bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm max-h-[calc(100vh-7rem)] overflow-y-auto custom-sidebar-scroll pr-3`}>
         
         {/* Phase 3: Algorithm Recommendation Filter */}
         <div className="pb-4 border-b border-slate-100 dark:border-slate-800">
           <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">
-            🎯 Match Algorítmico (3 personas)
+            🎯 Match Algorítmico (Grupo)
           </h3>
           <label className="flex items-center justify-between cursor-pointer group bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-200 dark:border-emerald-900/50">
             <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
@@ -242,9 +244,10 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
           </div>
         </div>
 
+        {/* Clear Filters */}
         <button 
           onClick={clearFilters}
-          className="w-full py-2.5 mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors border border-dashed border-slate-200 dark:border-slate-700 rounded-xl"
+          className="w-full py-2.5 mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors border border-dashed border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60"
         >
           Limpiar todos los filtros
         </button>

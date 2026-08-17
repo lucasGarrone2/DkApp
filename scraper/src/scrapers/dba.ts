@@ -2,7 +2,7 @@ import { BaseScraper } from './base';
 import { ListingInput } from '../types';
 import { Browser, Page } from 'puppeteer';
 import { createPage } from '../utils/browser';
-import { cleanText, parsePrice, parseRooms, parseSize } from '../utils/parser';
+import { cleanText, parsePrice, parseRooms, parseSize, isRealRentalListing } from '../utils/parser';
 import { normalizeLocation } from '../utils/location';
 
 interface RawDbaItem {
@@ -18,7 +18,7 @@ interface RawDbaItem {
 export class DbaScraper extends BaseScraper {
   name = 'DBA.dk';
   private browser: Browser;
-  private maxPages = 2;
+  private maxPages = 4;
 
   constructor(browser: Browser) {
     super();
@@ -36,12 +36,11 @@ export class DbaScraper extends BaseScraper {
             ? 'https://www.dba.dk/boliger/lejebolig/lejlighed/koebenhavn/'
             : `https://www.dba.dk/boliger/lejebolig/lejlighed/koebenhavn/side-${pageNum}/`;
 
-        this.log(`🕵️ Scraping page ${pageNum}: ${url}`);
+        this.log(`🕵️ Scraping DBA page ${pageNum}: ${url}`);
 
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-        await this.delay(2000, 3000);
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 35000 });
+        await this.delay(2500, 4000);
 
-        // Cookie banner handle
         try {
           const cookieBtn = await page.$('button#onetrust-accept-btn-handler, button[class*="accept"]');
           if (cookieBtn) {
@@ -56,7 +55,7 @@ export class DbaScraper extends BaseScraper {
         listings.push(...pageListings);
 
         if (pageNum < this.maxPages && pageListings.length > 0) {
-          await this.delay(3000, 5000);
+          await this.delay(2500, 4500);
         } else if (pageListings.length === 0) {
           break;
         }
@@ -143,22 +142,16 @@ export class DbaScraper extends BaseScraper {
       }
     });
 
-    const nonHousingKeywords = [
-      'crosstrainer', 'cykel', 'sko', 'støvler', 'kalender', 'puslespil',
-      'stof', 'kjole', 'jakke', 'dragt', 'quooker', 'porcelæn', 'vhs',
-      'poker', 'hjelm', 'badestol', 'stumtjener', 'rygsæk', 'kuglegrill',
-      'mærker', 'fælge', 'dæk', 'kopper', 'sengegavl', 'sneakers',
-      'model', 'manga', 'postkort', 'krus', 'bakke', 'skål', 'højttaler', 'jeans'
-    ];
-
     return Array.from(uniqueMap.values())
       .map((item) => {
         try {
           const title = cleanText(item.title);
-          const tLower = title.toLowerCase();
+          const priceDkk = parsePrice(item.priceText);
 
-          // Reject non-housing marketplace items
-          if (nonHousingKeywords.some((word) => tLower.includes(word))) {
+          // Combined text validation
+          const fullContext = `${title} ${item.locationText} ${item.rawSize}`;
+
+          if (!priceDkk || !isRealRentalListing(fullContext, priceDkk, false)) {
             return null;
           }
 
@@ -168,14 +161,8 @@ export class DbaScraper extends BaseScraper {
           if (postalMatch) postalCode = postalMatch[1];
 
           const locationName = normalizeLocation(item.locationText || 'København', postalCode || undefined);
-          const priceDkk = parsePrice(item.priceText);
           const sizeM2 = parseSize(item.rawSize);
           const rooms = parseRooms(item.rawRooms);
-
-          // Realistic monthly rental price filter for Copenhagen (between 3.000 and 50.000 DKK)
-          if (!priceDkk || priceDkk < 3000 || priceDkk > 50000) {
-            return null;
-          }
 
           const listing: ListingInput = {
             external_id: this.generateExternalId(url),
