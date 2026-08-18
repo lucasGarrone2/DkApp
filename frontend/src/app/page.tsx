@@ -22,6 +22,7 @@ export default function Home() {
     locations: [],
     platforms: [],
     cprOnly: false,
+    threeCprOnly: false,
     furnishedOnly: false,
     periodType: 'all',
     statusFilter: 'all',

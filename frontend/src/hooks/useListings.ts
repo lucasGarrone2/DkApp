@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabase } from '@/lib/supabase';
 import { Listing, Filters, SortOption } from '@/types/listing';
-import { calculateListingMatch } from '@/lib/recommendationScore';
+import { calculateListingMatch, supportsThreeCpr } from '@/lib/recommendationScore';
 
 export function useListings(filters: Filters, sort: SortOption) {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -77,6 +77,11 @@ export function useListings(filters: Filters, sort: SortOption) {
       }
 
       let resultData = (data as Listing[]) || [];
+
+      // 3 CPRs Filter (Bopælsregistrering for 3 people)
+      if (filters.threeCprOnly) {
+        resultData = resultData.filter(item => supportsThreeCpr(item));
+      }
 
       // Phase 3 Score Filter: "Solo recomendados (Score >= 60)"
       if (filters.recommendedOnly) {

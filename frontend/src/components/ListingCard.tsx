@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Listing } from '@/types/listing';
-import { calculateListingMatch } from '@/lib/recommendationScore';
+import { calculateListingMatch, supportsThreeCpr } from '@/lib/recommendationScore';
 import {
   formatRelativeTime,
   formatPrice,
@@ -36,7 +36,8 @@ export default function ListingCard({
   const [copied, setCopied] = useState(false);
 
   // Algorithm scoring for Working Holiday group
-  const match = calculateListingMatch(listing);
+  const match = calculateListingMatch(listing, peopleCount);
+  const is3CprValid = supportsThreeCpr(listing);
 
   const image = listing.images && listing.images.length > 0 ? listing.images[0] : null;
   const priceFormatted = formatPrice(listing.price_dkk);
@@ -56,6 +57,8 @@ export default function ListingCard({
       ? 'bg-[#0066CC]'
       : listing.source_platform.toLowerCase() === 'lejebolig'
       ? 'bg-[#059669]'
+      : listing.source_platform.toLowerCase() === 'edc'
+      ? 'bg-amber-600'
       : 'bg-purple-600';
 
   const scoreBadgeColors = {
@@ -185,10 +188,14 @@ export default function ListingCard({
           {listing.cpr_allowed !== null && (
             <span className={`px-2.5 py-1 rounded-md font-semibold ${
               listing.cpr_allowed 
-                ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300' 
+                ? is3CprValid
+                  ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700'
+                  : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300' 
                 : 'bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300'
             }`}>
-              {listing.cpr_allowed ? '🪪 CPR OK' : '⚠️ No CPR'}
+              {listing.cpr_allowed 
+                ? (is3CprValid ? '🪪 Apto 3 CPR' : '🪪 CPR OK') 
+                : '⚠️ No CPR'}
             </span>
           )}
 

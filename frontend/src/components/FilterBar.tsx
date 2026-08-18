@@ -37,6 +37,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
       locations: [],
       platforms: [],
       cprOnly: false,
+      threeCprOnly: false,
       furnishedOnly: false,
       periodType: 'all',
       statusFilter: 'all',
@@ -59,11 +60,30 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
       <div className={`space-y-6 lg:block ${isOpen ? 'block' : 'hidden'} bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm max-h-[calc(100vh-7rem)] overflow-y-auto custom-sidebar-scroll pr-3`}>
         
         {/* Phase 3: Algorithm Recommendation Filter */}
-        <div className="pb-4 border-b border-slate-100 dark:border-slate-800">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">
+        <div className="space-y-2 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">
             🎯 Match Algorítmico (Grupo)
           </h3>
-          <label className="flex items-center justify-between cursor-pointer group bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-200 dark:border-emerald-900/50">
+          
+          {/* 3 CPRs Mandatory Group Filter */}
+          <label className="flex items-center justify-between cursor-pointer group bg-blue-50 dark:bg-blue-950/40 p-3 rounded-xl border border-blue-200 dark:border-blue-900/50 transition-all hover:border-blue-300">
+            <div className="flex flex-col pr-2">
+              <span className="text-xs font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1">
+                🪪 Apto para 3 CPR
+              </span>
+              <span className="text-[10px] text-blue-700/80 dark:text-blue-300/80 leading-tight">
+                Permiso y capacidad legal para 3 personas
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              checked={filters.threeCprOnly}
+              onChange={(e) => updateFilter('threeCprOnly', e.target.checked)}
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-blue-300 dark:border-blue-700 cursor-pointer"
+            />
+          </label>
+
+          <label className="flex items-center justify-between cursor-pointer group bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-200 dark:border-emerald-900/50 transition-all hover:border-emerald-300">
             <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
               Solo recomendados (Score ≥ 60%)
             </span>
@@ -84,7 +104,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
 
           <label className="flex items-center justify-between cursor-pointer group">
             <span className="text-sm font-medium text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-              Solo registro de CPR 🪪
+              Solo con CPR (General) 🪪
             </span>
             <input
               type="checkbox"

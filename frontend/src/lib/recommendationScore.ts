@@ -12,6 +12,21 @@ const PRIME_ZONES = ['Indre By', 'Vesterbro', 'Nørrebro', 'Frederiksberg', 'Øs
 const TRANSIT_ZONES = ['Valby', 'Vanløse', 'Sydhavn', 'Nordvest'];
 
 /**
+ * Determines if a listing is legally and structurally suitable for 3 CPR registrations
+ * in Copenhagen (Bopælsregistrering: CPR allowed + capacity for 3 adults: >= 2 rooms or >= 50m²).
+ */
+export function supportsThreeCpr(listing: Listing): boolean {
+  if (listing.cpr_allowed === false) return false;
+  const title = (listing.title || '').toLowerCase();
+  if (title.includes('3 cpr') || title.includes('3 personer') || title.includes('3 cprs') || title.includes('3 rooms')) {
+    return true;
+  }
+  const rooms = listing.rooms || 0;
+  const size = listing.size_m2 || 0;
+  return rooms >= 2 || size >= 50;
+}
+
+/**
  * Calculates a personalized recommendation score (0-100) for a group of 3 people
  * (couple + 1 single friend) on a Working Holiday in Copenhagen.
  * Rule: Cost over 8.000 DKK/person can NEVER be "Muy Recomendado".
@@ -24,15 +39,20 @@ export function calculateListingMatch(listing: Listing, peopleCount: number = 3)
   // ==========================================
   // 1. CPR REGISTRATION (Critical / Excluyente)
   // ==========================================
+  const canRegister3 = supportsThreeCpr(listing);
+
   if (listing.cpr_allowed === false) {
     score -= 40;
     cons.push('Sin registro de CPR (Paso excluyente)');
-  } else if (listing.cpr_allowed === true) {
+  } else if (canRegister3) {
     score += 25;
-    pros.push('Permite registro de CPR (Permiso de residencia OK)');
+    pros.push('Apto para registrar 3 CPR (Capacidad y espacio verificado)');
+  } else if (listing.cpr_allowed === true) {
+    score += 15;
+    pros.push('Permite registro de CPR');
   } else {
     score += 5;
-    pros.push('CPR no especificado (Verificar con el arrendador)');
+    pros.push('CPR no especificado (Consultar al arrendador si permite 3 CPR)');
   }
 
   // ==========================================

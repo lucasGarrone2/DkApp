@@ -38,6 +38,7 @@ export interface Filters {
 
   // Phase 2 Advanced Filters
   cprOnly: boolean;
+  threeCprOnly: boolean; // Filter for listings supporting 3 CPR registrations
   furnishedOnly: boolean;
   periodType: 'all' | 'unlimited' | 'temporary';
   statusFilter: 'all' | 'favorites' | 'new' | 'interested' | 'applied' | 'rejected';
