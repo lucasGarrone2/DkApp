@@ -46,29 +46,33 @@ export default function Home() {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-slate-50/70 dark:bg-[#080d1a] relative overflow-x-hidden">
+      
+      {/* Subtle top ambient glow for deep navy aesthetic */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-blue-600/10 via-indigo-600/5 to-transparent blur-3xl pointer-events-none -z-10" />
+
       <Header
         peopleCount={peopleCount}
         onPeopleCountChange={setPeopleCount}
         count={count}
       />
 
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
           
           {/* Sidebar Filters */}
-          <aside className="w-full lg:w-72 lg:sticky lg:top-24">
+          <aside className="w-full lg:w-72 lg:sticky lg:top-20 z-10 flex-shrink-0">
             <FilterBar filters={filters} onFilterChange={setFilters} />
           </aside>
 
           {/* Main Listings Section */}
           <section className="flex-grow w-full min-w-0">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
               
               {comparedListings.length > 0 && (
                 <button
                   onClick={() => setShowComparisonModal(true)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2"
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center gap-2"
                 >
                   📊 Comparar {comparedListings.length} departamentos side-by-side
                 </button>
@@ -102,6 +106,6 @@ export default function Home() {
           onRemove={handleRemoveCompared}
         />
       )}
-    </>
+    </div>
   );
 }
