@@ -40,7 +40,7 @@ export default function Footer() {
         </div>
 
         <p className="text-[10px] text-slate-400 dark:text-slate-600 text-center">
-          © {new Date().getFullYear()} DK Rentals — Proyecto personal de búsqueda de alquileres en Copenhague. No afiliado con ningún portal de origen.
+          {new Date().getFullYear()} DK Rentals — Proyecto personal de búsqueda de alquileres en Copenhague. No afiliado con ningún portal de origen.
         </p>
       </div>
     </footer>

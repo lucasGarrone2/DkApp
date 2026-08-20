@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Listing } from '@/types/listing';
 import ListingCard from '@/components/ListingCard';
 
@@ -14,6 +15,8 @@ interface ListingGridProps {
   onUpdateNotes: (id: string, notes: string, contactedBy: string) => void;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export default function ListingGrid({
   listings,
   loading,
@@ -24,6 +27,13 @@ export default function ListingGrid({
   onToggleFavorite,
   onUpdateNotes,
 }: ListingGridProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to page 1 whenever listings change (filters or sort updated)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [listings.length, count]);
+
   if (error) {
     return (
       <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 p-6 rounded-2xl text-center my-6">
@@ -37,14 +47,32 @@ export default function ListingGrid({
     );
   }
 
+  const totalPages = Math.ceil(listings.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, listings.length);
+  const currentListings = listings.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  };
+
   return (
     <div className="space-y-4">
       {/* Header Stats */}
       <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 font-medium">
         <div className="flex items-center gap-2">
           <span>
-            Mostrando <strong className="text-slate-900 dark:text-white font-bold">{listings.length}</strong> de{' '}
-            <strong className="text-slate-900 dark:text-white font-bold">{count}</strong> propiedades
+            {listings.length > 0 ? (
+              <>
+                Mostrando <strong className="text-slate-900 dark:text-white font-bold">{startIndex + 1}-{endIndex}</strong> de{' '}
+                <strong className="text-slate-900 dark:text-white font-bold">{listings.length}</strong> propiedades
+              </>
+            ) : (
+              <>
+                <strong className="text-slate-900 dark:text-white font-bold">0</strong> propiedades
+              </>
+            )}
           </span>
           <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
           <span className="hidden sm:inline text-blue-600 dark:text-blue-400 font-semibold">
@@ -89,18 +117,57 @@ export default function ListingGrid({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-          {listings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              peopleCount={peopleCount}
-              onStatusChange={onStatusChange}
-              onToggleFavorite={onToggleFavorite}
-              onUpdateNotes={onUpdateNotes}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {currentListings.map((listing) => (
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                peopleCount={peopleCount}
+                onStatusChange={onStatusChange}
+                onToggleFavorite={onToggleFavorite}
+                onUpdateNotes={onUpdateNotes}
+              />
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="pt-6 pb-2 flex flex-wrap items-center justify-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
+              >
+                ← Anterior
+              </button>
+
+              <div className="flex items-center gap-1 overflow-x-auto max-w-full px-1">
+                {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`w-8 h-8 text-xs font-bold rounded-xl border transition-all flex items-center justify-center ${
+                      currentPage === page
+                        ? 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-500/20'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
+              >
+                Siguiente →
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

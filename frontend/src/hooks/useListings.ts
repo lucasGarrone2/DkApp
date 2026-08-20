@@ -68,7 +68,7 @@ export function useListings(filters: Filters, sort: SortOption) {
         query = query.order('price_dkk', { ascending: false });
       }
 
-      query = query.limit(100);
+      query = query.limit(500);
 
       const { data, error: supabaseError, count: rowCount } = await query;
 
@@ -110,7 +110,7 @@ export function useListings(filters: Filters, sort: SortOption) {
       }
 
       setListings(resultData);
-      setCount(rowCount || 0);
+      setCount(resultData.length);
     } catch (err: any) {
       setError(err.message || 'Error al obtener publicaciones');
       console.error('Supabase fetch error:', err);
