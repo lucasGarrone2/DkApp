@@ -39,7 +39,7 @@ export default function ListingCard({
   const match = calculateListingMatch(listing, peopleCount);
   const is3CprValid = supportsThreeCpr(listing);
 
-  const image = listing.images && listing.images.length > 0 ? listing.images[0] : null;
+
   const priceFormatted = formatPrice(listing.price_dkk);
   const pricePerM2 = formatPricePerM2(listing.price_dkk, listing.size_m2);
   const timeAgo = formatRelativeTime(listing.scraped_at);
@@ -107,61 +107,48 @@ export default function ListingCard({
   return (
     <div className="group bg-white dark:bg-[#0f172a] rounded-2xl overflow-hidden border border-slate-200/90 dark:border-slate-800/90 hover:border-blue-400 dark:hover:border-blue-500/50 hover:shadow-xl dark:hover:shadow-2xl/10 transition-all duration-300 hover:-translate-y-1 flex flex-col h-full relative">
       
-      {/* Image Container */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-        {image ? (
-          <img
-            src={image}
-            alt={listing.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 bg-slate-100 dark:bg-slate-800/80">
-            <svg className="w-10 h-10 mb-1 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            <span className="text-[11px] font-medium">Sin foto disponible</span>
-          </div>
-        )}
-
-        {/* Gradient Bottom Shadow for contrast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
-
-        {/* Phase 3 Recommendation Match Badge */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1 items-start">
-          <div className={`px-2.5 py-1 rounded-xl text-[11px] font-black shadow-md flex items-center gap-1.5 backdrop-blur-md ${scoreBadgeColors[match.badgeVariant]}`}>
+      {/* Header Bar (no images for legal compliance) */}
+      <div className="relative px-4 pt-4 pb-3 bg-gradient-to-br from-slate-50 to-slate-100/80 dark:from-slate-800/80 dark:to-slate-900/60 border-b border-slate-200/60 dark:border-slate-700/60">
+        <div className="flex items-center justify-between gap-2">
+          {/* Score Badge */}
+          <div className={`px-2.5 py-1 rounded-xl text-[11px] font-black shadow-sm flex items-center gap-1.5 ${scoreBadgeColors[match.badgeVariant]}`}>
             <span>{match.score}%</span>
             <span>·</span>
             <span>{match.label}</span>
           </div>
-        </div>
 
-        {/* Favorite Star Button */}
-        <button
-          onClick={() => onToggleFavorite(listing.id, listing.is_favorite)}
-          className={`absolute top-3 right-3 p-2 rounded-xl backdrop-blur-md transition-all ${
-            listing.is_favorite
-              ? 'bg-amber-400 text-slate-900 shadow-md scale-105'
-              : 'bg-slate-900/60 text-white/90 hover:bg-slate-900/90 hover:scale-105'
-          }`}
-          title={listing.is_favorite ? 'Quitar de favoritos' : 'Marcar como favorito'}
-        >
-          ★
-        </button>
-
-        {/* Price Tag Overlay */}
-        {listing.price_dkk && (
-          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
-            <span className="bg-slate-900/90 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md border border-white/10">
-              {priceFormatted} / mes
-            </span>
+          <div className="flex items-center gap-2">
+            {/* Platform Badge */}
             <span className={`${platformColor} text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm border border-white/10`}>
               {listing.source_platform}
             </span>
+
+            {/* Favorite Star Button */}
+            <button
+              onClick={() => onToggleFavorite(listing.id, listing.is_favorite)}
+              className={`p-1.5 rounded-lg transition-all ${
+                listing.is_favorite
+                  ? 'bg-amber-400 text-slate-900 shadow-sm scale-105'
+                  : 'bg-slate-200/80 dark:bg-slate-700/80 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-600 hover:scale-105'
+              }`}
+              title={listing.is_favorite ? 'Quitar de favoritos' : 'Marcar como favorito'}
+            >
+              ★
+            </button>
+          </div>
+        </div>
+
+        {/* Price */}
+        {listing.price_dkk && (
+          <div className="mt-2">
+            <span className="text-sm font-black text-slate-900 dark:text-white">
+              {priceFormatted}
+            </span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 ml-1">/ mes</span>
           </div>
         )}
       </div>
+
 
       {/* Main Content Area */}
       <div className="p-4 sm:p-5 flex flex-col flex-grow">
@@ -345,14 +332,20 @@ export default function ListingCard({
             </a>
           </div>
 
-          <a
-            href={listing.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-1.5 text-xs font-bold text-center text-blue-600 dark:text-blue-400 hover:underline flex items-center justify-center gap-1"
-          >
-            Ver publicación en {listing.source_platform} →
-          </a>
+          {/* Legal compliance: prominent attribution and deep link */}
+          <div className="bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 rounded-xl p-2.5 text-center">
+            <a
+              href={listing.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-bold text-blue-700 dark:text-blue-300 hover:underline flex items-center justify-center gap-1"
+            >
+              🔗 Ver publicación original en {listing.source_platform} →
+            </a>
+            <p className="text-[10px] text-blue-600/70 dark:text-blue-400/60 mt-0.5">
+              Datos agregados — consulte el portal para info completa y actualizada
+            </p>
+          </div>
         </div>
 
       </div>

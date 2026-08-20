@@ -35,7 +35,7 @@ export class HousingAnywhereScraper extends BaseScraper {
     'https://housinganywhere.com/s/Valby--Denmark',
     'https://housinganywhere.com/s/Vesterbro--Denmark',
     'https://housinganywhere.com/s/N%C3%B8rrebro--Denmark',
-    'https://housinganywhere.com/s/Østerbro--Denmark'
+    'https://housinganywhere.com/s/Østerbro--Denmark',
   ];
 
   constructor(browser: Browser) {
@@ -48,12 +48,19 @@ export class HousingAnywhereScraper extends BaseScraper {
     const page = await createPage(this.browser);
 
     try {
+      // Legal compliance: check robots.txt before scraping
+      const firstUrl = this.targetUrls[0];
+      if (!(await this.isScrapingAllowed(firstUrl))) {
+        this.log('⛔ HousingAnywhere has blocked our bot via robots.txt. Skipping entirely.');
+        return listings;
+      }
+
       for (const url of this.targetUrls) {
         this.log(`🕵️ Scraping HousingAnywhere: ${url}`);
 
         try {
           await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 35000 });
-          await this.delay(2500, 4000);
+          await this.delay(4000, 7000);
 
           try {
             const cookieBtn = await page.$('button[id*="accept"], button[class*="accept"]');
@@ -71,7 +78,7 @@ export class HousingAnywhereScraper extends BaseScraper {
           this.log(`⚠️ Error on URL ${url}: ${(subErr as Error).message}`);
         }
 
-        await this.delay(1500, 3000);
+        await this.delay(3000, 6000);
       }
     } catch (error) {
       this.log(`❌ Error scraping HousingAnywhere: ${(error as Error).message}`);
@@ -134,12 +141,16 @@ export class HousingAnywhereScraper extends BaseScraper {
           const locationName = normalizeLocation(rawText, postalCode || undefined);
 
           let title = '';
-          const titleMatch = rawText.match(/(Apartment in [^0-9\.\,\•]+|Studio in [^0-9\.\,\•]+|Room in [^0-9\.\,\•]+)/i);
+          const titleMatch = rawText.match(
+            /(Apartment in [^0-9\.\,\•]+|Studio in [^0-9\.\,\•]+|Room in [^0-9\.\,\•]+)/i
+          );
           if (titleMatch) {
             title = titleMatch[1].trim();
           } else {
             title = `Lejlighed i ${locationName}`;
           }
+
+          title = this.sanitize(title);
 
           if (!price || price < 3000 || price > 55000) {
             return null;
@@ -162,7 +173,7 @@ export class HousingAnywhereScraper extends BaseScraper {
             size_m2: size,
             location_name: locationName,
             postal_code: postalCode,
-            images: item.imgUrl ? [item.imgUrl] : [],
+            images: [], // Legal compliance: no image storage
             cpr_allowed: cprAllowed ?? true,
             is_furnished: isFurnished,
             rental_period_type: rentalPeriodType,

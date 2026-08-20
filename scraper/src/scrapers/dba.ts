@@ -30,6 +30,13 @@ export class DbaScraper extends BaseScraper {
     const page = await createPage(this.browser);
 
     try {
+      // Legal compliance: check robots.txt before scraping
+      const firstUrl = 'https://www.dba.dk/boliger/lejebolig/lejlighed/koebenhavn/';
+      if (!(await this.isScrapingAllowed(firstUrl))) {
+        this.log('⛔ DBA.dk has blocked our bot via robots.txt. Skipping entirely.');
+        return listings;
+      }
+
       for (let pageNum = 1; pageNum <= this.maxPages; pageNum++) {
         const url =
           pageNum === 1
@@ -39,7 +46,7 @@ export class DbaScraper extends BaseScraper {
         this.log(`🕵️ Scraping DBA page ${pageNum}: ${url}`);
 
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 35000 });
-        await this.delay(2500, 4000);
+        await this.delay(4000, 7000);
 
         try {
           const cookieBtn = await page.$('button#onetrust-accept-btn-handler, button[class*="accept"]');
@@ -55,7 +62,7 @@ export class DbaScraper extends BaseScraper {
         listings.push(...pageListings);
 
         if (pageNum < this.maxPages && pageListings.length > 0) {
-          await this.delay(2500, 4500);
+          await this.delay(5000, 8000);
         } else if (pageListings.length === 0) {
           break;
         }
@@ -145,11 +152,12 @@ export class DbaScraper extends BaseScraper {
     return Array.from(uniqueMap.values())
       .map((item) => {
         try {
-          const title = cleanText(item.title);
+          const rawTitle = cleanText(item.title);
+          const sanitizedTitle = this.sanitize(rawTitle);
           const priceDkk = parsePrice(item.priceText);
 
           // Combined text validation
-          const fullContext = `${title} ${item.locationText} ${item.rawSize}`;
+          const fullContext = `${sanitizedTitle} ${item.locationText} ${item.rawSize}`;
 
           if (!priceDkk || !isRealRentalListing(fullContext, priceDkk, false)) {
             return null;
@@ -167,7 +175,7 @@ export class DbaScraper extends BaseScraper {
           const listing: ListingInput = {
             external_id: this.generateExternalId(url),
             source_platform: 'DBA',
-            title: title || 'Lejlighed til leje i København',
+            title: sanitizedTitle || 'Lejlighed til leje i København',
             url,
             price_dkk: priceDkk,
             deposit_dkk: null,
@@ -175,7 +183,7 @@ export class DbaScraper extends BaseScraper {
             size_m2: sizeM2,
             location_name: locationName,
             postal_code: postalCode,
-            images: item.imgUrl ? [item.imgUrl] : [],
+            images: [], // Legal compliance: no image storage
           };
           return listing;
         } catch (_) {

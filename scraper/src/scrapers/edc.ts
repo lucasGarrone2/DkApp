@@ -36,16 +36,26 @@ export class EdcScraper extends BaseScraper {
     const page = await createPage(this.browser);
 
     try {
+      // Legal compliance: check robots.txt before scraping
+      const firstUrl = 'https://www.edc.dk/lejebolig/koebenhavn/';
+      if (!(await this.isScrapingAllowed(firstUrl))) {
+        this.log('⛔ EDC.dk has blocked our bot via robots.txt. Skipping entirely.');
+        return listings;
+      }
+
       for (let pageNum = 1; pageNum <= this.maxPages; pageNum++) {
-        const url = pageNum === 1
-          ? 'https://www.edc.dk/lejebolig/koebenhavn/'
-          : `https://www.edc.dk/lejebolig/koebenhavn/?side=${pageNum}`;
+        const url =
+          pageNum === 1
+            ? 'https://www.edc.dk/lejebolig/koebenhavn/'
+            : `https://www.edc.dk/lejebolig/koebenhavn/?side=${pageNum}`;
 
         this.log(`🕵️ Scraping EDC page ${pageNum}: ${url}`);
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 35000 });
-        
+
         try {
-          const cookieBtn = await page.$('#coiPage-1 .coi-banner__accept, button[id*="accept"], button[class*="accept"]');
+          const cookieBtn = await page.$(
+            '#coiPage-1 .coi-banner__accept, button[id*="accept"], button[class*="accept"]'
+          );
           if (cookieBtn) {
             await cookieBtn.click();
             await this.delay(1000);
@@ -53,7 +63,7 @@ export class EdcScraper extends BaseScraper {
         } catch (_) {}
 
         await page.waitForSelector('a[href*="/sag/"], a[href*="/leje/lejlighed/"]', { timeout: 6000 }).catch(() => {});
-        await this.delay(2000, 3000);
+        await this.delay(4000, 6000);
 
         const rawItems = await this.extractRawItems(page);
         const pageListings = this.transformRawItems(rawItems);
@@ -61,7 +71,7 @@ export class EdcScraper extends BaseScraper {
         listings.push(...pageListings);
 
         if (pageNum < this.maxPages && pageListings.length > 0) {
-          await this.delay(2000, 3500);
+          await this.delay(4000, 7000);
         } else if (pageListings.length === 0) {
           break;
         }
@@ -127,7 +137,9 @@ export class EdcScraper extends BaseScraper {
           const locationName = normalizeLocation(rawText, postalCode || undefined);
 
           let title = '';
-          const addressMatch = rawText.match(/([A-ZÆØÅ][a-zæøåA-ZÆØÅ0-9\.\s\-]+,\s*\d+\.?\s*[a-z0-9]*|\b[A-ZÆØÅ][a-zæøåA-ZÆØÅ0-9\.\s\-]+\s+\d+\b)/);
+          const addressMatch = rawText.match(
+            /([A-ZÆØÅ][a-zæøåA-ZÆØÅ0-9\.\s\-]+,\s*\d+\.?\s*[a-z0-9]*|\b[A-ZÆØÅ][a-zæøåA-ZÆØÅ0-9\.\s\-]+\s+\d+\b)/
+          );
           if (addressMatch && addressMatch[1].length > 5) {
             title = addressMatch[1].trim();
           } else {
@@ -137,6 +149,8 @@ export class EdcScraper extends BaseScraper {
             if (locationName) parts.push(`i ${locationName}`);
             title = parts.join(' ');
           }
+
+          title = this.sanitize(title);
 
           if (!price || !isRealRentalListing(title, price, true)) {
             return null;
@@ -159,7 +173,7 @@ export class EdcScraper extends BaseScraper {
             size_m2: size,
             location_name: locationName,
             postal_code: postalCode,
-            images: item.imgUrl ? [item.imgUrl] : [],
+            images: [], // Legal compliance: no image storage
             cpr_allowed: cprAllowed ?? true, // EDC commercial rentals almost always allow CPR
             is_furnished: isFurnished,
             rental_period_type: rentalPeriodType,

@@ -44,16 +44,23 @@ export class KvikboligScraper extends BaseScraper {
     const page = await createPage(this.browser);
 
     try {
-      // 1. Authenticate to unlock full rental details
+      // 1. Check robots.txt
+      const firstUrl = this.targetUrls[0];
+      if (!(await this.isScrapingAllowed(firstUrl))) {
+        this.log('⛔ Kvikbolig.dk has blocked our bot via robots.txt. Skipping entirely.');
+        return listings;
+      }
+
+      // 2. Authenticate to unlock full rental details
       await this.login(page);
 
-      // 2. Iterate search areas in Copenhagen
+      // 3. Iterate search areas in Copenhagen
       for (const url of this.targetUrls) {
         this.log(`🕵️ Scraping Kvikbolig: ${url}`);
 
         try {
           await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 35000 });
-          await this.delay(2500, 4000);
+          await this.delay(4000, 7000);
 
           const rawItems = await this.extractRawItems(page);
           const transformed = this.transformRawItems(rawItems);
@@ -63,7 +70,7 @@ export class KvikboligScraper extends BaseScraper {
           this.log(`⚠️ Error scraping ${url}: ${(subErr as Error).message}`);
         }
 
-        await this.delay(1500, 3000);
+        await this.delay(3000, 6000);
       }
     } catch (error) {
       this.log(`❌ Error scraping Kvikbolig: ${(error as Error).message}`);
@@ -120,7 +127,8 @@ export class KvikboligScraper extends BaseScraper {
 
       cardEls.forEach((card) => {
         try {
-          const linkEl = card.tagName === 'A' ? (card as HTMLAnchorElement) : (card.querySelector('a') as HTMLAnchorElement);
+          const linkEl =
+            card.tagName === 'A' ? (card as HTMLAnchorElement) : (card.querySelector('a') as HTMLAnchorElement);
           if (!linkEl || !linkEl.href) return;
           const url = linkEl.href;
           if (seen.has(url)) return;
@@ -176,6 +184,8 @@ export class KvikboligScraper extends BaseScraper {
             title = parts.join(' ');
           }
 
+          title = this.sanitize(title);
+
           if (!price || !isRealRentalListing(title + ' ' + rawText, price, true)) {
             return null;
           }
@@ -196,7 +206,7 @@ export class KvikboligScraper extends BaseScraper {
             size_m2: size,
             location_name: locationName,
             postal_code: postalCode,
-            images: item.imgUrl ? [item.imgUrl] : [],
+            images: [], // Legal compliance: no image storage
             cpr_allowed: cprAllowed ?? true,
             is_furnished: isFurnished,
             rental_period_type: rentalPeriodType,

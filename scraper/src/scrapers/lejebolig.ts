@@ -32,6 +32,12 @@ export class LejeboligScraper extends BaseScraper {
       const url = 'https://www.lejebolig.dk/lejligheder/k%C3%B8benhavn';
       this.log(`🕵️ Scraping: ${url}`);
 
+      // Legal compliance: check robots.txt before scraping
+      if (!(await this.isScrapingAllowed(url))) {
+        this.log('⛔ Lejebolig.dk has blocked our bot via robots.txt. Skipping entirely.');
+        return listings;
+      }
+
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
       // Handle cookie consent if present
@@ -55,7 +61,7 @@ export class LejeboligScraper extends BaseScraper {
         this.log('⚠️ Selector timeout, reading DOM state as-is...');
       }
 
-      await this.delay(3000, 4000);
+      await this.delay(5000, 8000);
 
       const rawItems = await this.extractRawItems(page);
       const transformed = this.transformRawItems(rawItems);
@@ -73,22 +79,26 @@ export class LejeboligScraper extends BaseScraper {
   private async extractRawItems(page: Page): Promise<RawLejeboligItem[]> {
     return page.evaluate(() => {
       const items: any[] = [];
-      
+
       // Match links to rental properties or card containers
-      const cards = document.querySelectorAll('article, [class*="ListItem"], [class*="card"], div[class*="property"], li');
+      const cards = document.querySelectorAll(
+        'article, [class*="ListItem"], [class*="card"], div[class*="property"], li'
+      );
       const seenUrls = new Set<string>();
 
       cards.forEach((card) => {
         try {
-          const linkEl = card.querySelector('a[href*="/bolig/"], a[href*="/lejlighed"], a[href*="/leje/"]') || 
-                         (card.tagName === 'A' ? (card as HTMLAnchorElement) : null);
+          const linkEl =
+            card.querySelector('a[href*="/bolig/"], a[href*="/lejlighed"], a[href*="/leje/"]') ||
+            (card.tagName === 'A' ? (card as HTMLAnchorElement) : null);
           if (!linkEl) return;
 
           const url = (linkEl as HTMLAnchorElement).href;
           if (!url || seenUrls.has(url) || url === window.location.href) return;
           seenUrls.add(url);
 
-          const title = linkEl.textContent?.trim() || card.querySelector('h2, h3, [class*="title"]')?.textContent?.trim() || '';
+          const title =
+            linkEl.textContent?.trim() || card.querySelector('h2, h3, [class*="title"]')?.textContent?.trim() || '';
           const priceEl = card.querySelector('[class*="price"], [class*="rent"], [class*="husleje"]');
           const locationEl = card.querySelector('[class*="location"], [class*="address"], [class*="city"]');
           const imgEl = card.querySelector('img');
@@ -158,7 +168,7 @@ export class LejeboligScraper extends BaseScraper {
             postalCode || undefined
           );
 
-          let title = cleanText(item.title);
+          let title = this.sanitize(cleanText(item.title));
           if (!title || title.length < 5) {
             const parts: string[] = [];
             if (rooms) parts.push(`${rooms} vær.`);
@@ -178,7 +188,7 @@ export class LejeboligScraper extends BaseScraper {
             size_m2: size,
             location_name: locationName,
             postal_code: postalCode,
-            images: item.imgUrl ? [item.imgUrl] : [],
+            images: [], // Legal compliance: no image storage
           };
           return listing;
         } catch (_) {
