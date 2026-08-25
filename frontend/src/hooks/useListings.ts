@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabase } from '@/lib/supabase';
 import { Listing, Filters, SortOption } from '@/types/listing';
-import { calculateListingMatch, supportsThreeCpr } from '@/lib/recommendationScore';
+import {
+  calculateListingMatch,
+  supportsCprCount,
+  getEffectiveRooms,
+} from '@/lib/recommendationScore';
 
 export function useListings(filters: Filters, sort: SortOption) {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -25,9 +29,6 @@ export function useListings(filters: Filters, sort: SortOption) {
       }
       if (filters.priceMax !== null) {
         query = query.lte('price_dkk', filters.priceMax);
-      }
-      if (filters.roomsMin !== null) {
-        query = query.gte('rooms', filters.roomsMin);
       }
       if (filters.sizeMin !== null) {
         query = query.gte('size_m2', filters.sizeMin);
@@ -70,7 +71,7 @@ export function useListings(filters: Filters, sort: SortOption) {
 
       query = query.limit(500);
 
-      const { data, error: supabaseError, count: rowCount } = await query;
+      const { data, error: supabaseError } = await query;
 
       if (supabaseError) {
         throw supabaseError;
@@ -78,12 +79,19 @@ export function useListings(filters: Filters, sort: SortOption) {
 
       let resultData = (data as Listing[]) || [];
 
-      // 3 CPRs Filter (Bopælsregistrering for 3 people)
-      if (filters.threeCprOnly) {
-        resultData = resultData.filter(item => supportsThreeCpr(item));
+      // Effective Rooms Filtering (Handles "Room in..." offers accurately)
+      if (filters.roomsMin !== null) {
+        resultData = resultData.filter(item => getEffectiveRooms(item) >= filters.roomsMin!);
       }
 
-      // Phase 3 Score Filter: "Solo recomendados (Score >= 60)"
+      // Dynamic CPR Capacity Filter (1, 2, or 3 CPRs)
+      if (filters.cprMin !== null && filters.cprMin > 0) {
+        resultData = resultData.filter(item => supportsCprCount(item, filters.cprMin!));
+      } else if (filters.threeCprOnly) {
+        resultData = resultData.filter(item => supportsCprCount(item, 3));
+      }
+
+      // Score Filter: "Solo recomendados (Score >= 60)"
       if (filters.recommendedOnly) {
         resultData = resultData.filter(item => calculateListingMatch(item).score >= 60);
       }

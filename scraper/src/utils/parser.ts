@@ -76,21 +76,44 @@ export function parseSize(text: string | null | undefined): number | null {
 
 /**
  * Parses rooms string into a number.
- * Supports: "1 room", "2 rooms", "3 værelser", "Rooms 2", "2 bed"
+ * If the listing is a single room offer ("room in...", "private room", "værelse"),
+ * it guarantees rooms = 1.
  */
-export function parseRooms(text: string | null | undefined): number | null {
+export function parseRooms(text: string | null | undefined, title?: string): number | null {
+  if (title) {
+    const t = title.toLowerCase();
+    if (
+      t.includes('room in') ||
+      t.includes('private room') ||
+      t.includes('single room') ||
+      t.includes('værelse') ||
+      t.includes('shared room')
+    ) {
+      return 1;
+    }
+  }
+
   if (!text) return null;
   const cleaned = cleanText(text).toLowerCase();
 
+  if (
+    cleaned.includes('room in') ||
+    cleaned.includes('private room') ||
+    cleaned.includes('single room') ||
+    cleaned.includes('eget værelse')
+  ) {
+    return 1;
+  }
+
   // Pattern 1: "2 rooms", "1 room", "3 værelser", "2 bed"
-  const match1 = cleaned.match(/(\d+(?:\.\d+)?)\s*(?:vær|værelser|rooms?|v|bedrooms?|bed|rum)/i);
+  const match1 = cleaned.match(/\b(\d+)\s*(?:vær|værelser|rooms?|bedrooms?|rum)\b/i);
   if (match1 && match1[1]) {
-    const rooms = parseFloat(match1[1]);
+    const rooms = parseInt(match1[1], 10);
     if (!isNaN(rooms) && rooms > 0 && rooms <= 15) return rooms;
   }
 
   // Pattern 2: "Rooms 2", "Værelser: 3"
-  const match2 = cleaned.match(/(?:rooms?|værelser?|rum)\s*:?\s*(\d+)/i);
+  const match2 = cleaned.match(/\b(?:rooms?|værelser?|rum)\s*:?\s*(\d+)\b/i);
   if (match2 && match2[1]) {
     const rooms = parseInt(match2[1], 10);
     if (!isNaN(rooms) && rooms > 0 && rooms <= 15) return rooms;

@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import { Listing } from '@/types/listing';
-import { calculateListingMatch, supportsThreeCpr } from '@/lib/recommendationScore';
+import {
+  calculateListingMatch,
+  isSingleRoomListing,
+  getEffectiveRooms,
+  getMaxCprCapacity,
+} from '@/lib/recommendationScore';
 import {
   formatRelativeTime,
   formatPrice,
@@ -35,10 +40,13 @@ export default function ListingCard({
   const [contactedByText, setContactedByText] = useState(listing.contacted_by || '');
   const [copied, setCopied] = useState(false);
 
+  // Room offer & capacity detection
+  const isRoomOnly = isSingleRoomListing(listing);
+  const effectiveRooms = getEffectiveRooms(listing);
+  const maxCpr = getMaxCprCapacity(listing);
+
   // Algorithm scoring for Working Holiday group
   const match = calculateListingMatch(listing, peopleCount);
-  const is3CprValid = supportsThreeCpr(listing);
-
 
   const priceFormatted = formatPrice(listing.price_dkk);
   const pricePerM2 = formatPricePerM2(listing.price_dkk, listing.size_m2);
@@ -149,7 +157,6 @@ export default function ListingCard({
         )}
       </div>
 
-
       {/* Main Content Area */}
       <div className="p-4 sm:p-5 flex flex-col flex-grow">
         
@@ -165,11 +172,9 @@ export default function ListingCard({
               📐 {listing.size_m2} m²
             </span>
           )}
-          {listing.rooms && (
-            <span className="bg-slate-100/90 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg font-bold text-[11px] border border-slate-200/60 dark:border-slate-700/60">
-              🛏️ {listing.rooms} hab.
-            </span>
-          )}
+          <span className="bg-slate-100/90 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg font-bold text-[11px] border border-slate-200/60 dark:border-slate-700/60">
+            🛏️ {isRoomOnly ? '1 hab. (Privada)' : `${effectiveRooms} hab.`}
+          </span>
           {listing.location_name && (
             <span className="bg-slate-100/90 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg font-bold text-[11px] border border-slate-200/60 dark:border-slate-700/60">
               📍 {listing.location_name}
@@ -180,13 +185,19 @@ export default function ListingCard({
           {listing.cpr_allowed !== null && (
             <span className={`px-2.5 py-1 rounded-lg font-bold text-[11px] ${
               listing.cpr_allowed 
-                ? is3CprValid
+                ? maxCpr >= 3
                   ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700/80'
+                  : maxCpr === 2
+                  ? 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-700/80'
                   : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/80' 
                 : 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700/80'
             }`}>
               {listing.cpr_allowed 
-                ? (is3CprValid ? '🪪 Apto 3 CPR' : '🪪 CPR OK') 
+                ? maxCpr >= 3
+                  ? '🪪 Apto 3+ CPR'
+                  : maxCpr === 2
+                  ? '🪪 Apto 2 CPR'
+                  : '🪪 1 CPR (Habitación)'
                 : '⚠️ No CPR'}
             </span>
           )}

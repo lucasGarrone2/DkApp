@@ -6,6 +6,7 @@ import { useState } from 'react';
 interface FilterBarProps {
   filters: Filters;
   onFilterChange: (filters: Filters) => void;
+  peopleCount?: number;
 }
 
 const NEIGHBORHOODS = [
@@ -13,7 +14,7 @@ const NEIGHBORHOODS = [
   'Frederiksberg', 'Indre By', 'Valby', 'NV', 'Brønshøj/Vanløse'
 ];
 
-export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
+export default function FilterBar({ filters, onFilterChange, peopleCount = 3 }: FilterBarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const updateFilter = (key: keyof Filters, value: any) => {
@@ -37,7 +38,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
       locations: [],
       platforms: [],
       cprOnly: false,
-      threeCprOnly: false,
+      cprMin: null,
       furnishedOnly: false,
       periodType: 'all',
       statusFilter: 'all',
@@ -72,29 +73,41 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
           </button>
         </div>
 
-        {/* Phase 3: Algorithm Recommendation Filter */}
-        <div className="space-y-2 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+        {/* Phase 3: Algorithm Recommendation & Dynamic CPR Filter */}
+        <div className="space-y-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
           <h3 className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-            🎯 Match Algorítmico (Grupo)
+            🎯 Match y Capacidad CPR
           </h3>
           
-          {/* 3 CPRs Mandatory Group Filter */}
-          <label className="flex items-center justify-between cursor-pointer group bg-gradient-to-r from-blue-50/80 to-indigo-50/60 dark:from-blue-950/40 dark:to-indigo-950/30 p-3 rounded-xl border border-blue-200/80 dark:border-blue-900/60 transition-all hover:border-blue-300 dark:hover:border-blue-700">
-            <div className="flex flex-col pr-2">
+          {/* Dynamic CPR Registration Capacity Dropdown */}
+          <div className="bg-gradient-to-r from-blue-50/90 to-indigo-50/70 dark:from-blue-950/40 dark:to-indigo-950/30 p-3 rounded-xl border border-blue-200/80 dark:border-blue-900/60 space-y-2">
+            <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1">
-                🪪 Apto para 3 CPR
+                🪪 Registro de CPR
               </span>
-              <span className="text-[10px] text-blue-700/80 dark:text-blue-300/80 leading-tight mt-0.5">
-                Capacidad y registro legal para 3 personas
-              </span>
+              {filters.cprMin !== null && (
+                <span className="text-[10px] bg-blue-600 text-white font-bold px-1.5 py-0.5 rounded-md">
+                  {filters.cprMin}+ CPR
+                </span>
+              )}
             </div>
-            <input
-              type="checkbox"
-              checked={filters.threeCprOnly}
-              onChange={(e) => updateFilter('threeCprOnly', e.target.checked)}
-              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-blue-300 dark:border-blue-700 cursor-pointer"
-            />
-          </label>
+            <p className="text-[10px] text-blue-700/80 dark:text-blue-300/80 leading-tight">
+              Capacidad legal requerida para tu grupo:
+            </p>
+            <select
+              value={filters.cprMin === null ? 'all' : filters.cprMin}
+              onChange={(e) => {
+                const val = e.target.value === 'all' ? null : Number(e.target.value);
+                updateFilter('cprMin', val);
+              }}
+              className="w-full bg-white dark:bg-[#0b1120] text-slate-900 dark:text-white font-bold text-xs rounded-lg px-2.5 py-2 outline-none border border-blue-200 dark:border-blue-800 shadow-sm cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-colors"
+            >
+              <option value="all">🌐 Todos (Cualquier capacidad)</option>
+              <option value="1">👤 Mínimo 1 CPR (Habitación / 1 pers.)</option>
+              <option value="2">👥 Mínimo 2 CPR (Pareja / 2 pers.)</option>
+              <option value="3">👨‍👩‍👦 Mínimo 3 CPR (Grupo de 3 personas)</option>
+            </select>
+          </div>
 
           <label className="flex items-center justify-between cursor-pointer group bg-emerald-50/70 dark:bg-emerald-950/30 p-3 rounded-xl border border-emerald-200/80 dark:border-emerald-900/50 transition-all hover:border-emerald-300">
             <span className="text-xs font-bold text-emerald-950 dark:text-emerald-200">

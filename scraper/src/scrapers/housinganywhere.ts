@@ -132,7 +132,6 @@ export class HousingAnywhereScraper extends BaseScraper {
           const rawText = cleanText(item.fullText);
           const price = parsePrice(rawText);
           const size = parseSize(rawText);
-          const rooms = parseRooms(rawText) || 1;
 
           let postalCode: string | null = null;
           const postalMatch = rawText.match(/\b(1\d{3}|2\d{3})\b/);
@@ -151,6 +150,15 @@ export class HousingAnywhereScraper extends BaseScraper {
           }
 
           title = this.sanitize(title);
+
+          const isRoomOffer =
+            title.toLowerCase().includes('room in') ||
+            title.toLowerCase().includes('private room') ||
+            rawText.toLowerCase().includes('private room') ||
+            rawText.toLowerCase().includes('shared room') ||
+            item.url.includes('/room/');
+
+          const rooms = isRoomOffer ? 1 : (parseRooms(rawText, title) || 1);
 
           if (!price || price < 3000 || price > 55000) {
             return null;

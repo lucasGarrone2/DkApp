@@ -12,51 +12,138 @@ const PRIME_ZONES = ['Indre By', 'Vesterbro', 'Nørrebro', 'Frederiksberg', 'Øs
 const TRANSIT_ZONES = ['Valby', 'Vanløse', 'Sydhavn', 'Nordvest'];
 
 /**
- * Determines if a listing is legally and structurally suitable for 3 CPR registrations
- * in Copenhagen (Bopælsregistrering: CPR allowed + capacity for 3 adults: >= 2 rooms or >= 50m²).
+ * Detects if a listing offers only a single room (in a shared flat or house)
+ * rather than an entire multi-room apartment.
  */
-export function supportsThreeCpr(listing: Listing): boolean {
-  if (listing.cpr_allowed === false) return false;
+export function isSingleRoomListing(listing: Listing): boolean {
   const title = (listing.title || '').toLowerCase();
-  if (title.includes('3 cpr') || title.includes('3 personer') || title.includes('3 cprs') || title.includes('3 rooms')) {
+  const url = (listing.url || '').toLowerCase();
+
+  // Explicit single-room indicators
+  if (
+    title.includes('room in') ||
+    title.includes('værelse') ||
+    title.includes('private room') ||
+    title.includes('single room') ||
+    title.includes('shared room') ||
+    url.includes('/room/')
+  ) {
     return true;
   }
-  const rooms = listing.rooms || 0;
-  const size = listing.size_m2 || 0;
-  return rooms >= 2 || size >= 50;
+
+  // If size is <= 25 m2 and price is room-level (<= 7500 DKK), it's a single room
+  if (listing.size_m2 && listing.size_m2 <= 25 && listing.price_dkk && listing.price_dkk <= 7500) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
- * Calculates a personalized recommendation score (0-100) for a group of 3 people
- * (couple + 1 single friend) on a Working Holiday in Copenhagen.
- * Rule: Cost over 8.000 DKK/person can NEVER be "Muy Recomendado".
+ * Returns the actual habitable rooms being rented out in the listing.
+ * Single room offers always equal 1 room for the tenant.
+ */
+export function getEffectiveRooms(listing: Listing): number {
+  if (isSingleRoomListing(listing)) {
+    return 1;
+  }
+  return listing.rooms || 1;
+}
+
+/**
+ * Calculates maximum legal CPR registration capacity based on Danish regulations
+ * (Bopælsregistrering: max 2 persons per habitable room or >= 25m² per person).
+ */
+export function getMaxCprCapacity(listing: Listing): number {
+  if (listing.cpr_allowed === false) return 0;
+
+  // Single room offer can only register 1 CPR
+  if (isSingleRoomListing(listing)) {
+    return 1;
+  }
+
+  const rooms = getEffectiveRooms(listing);
+  const size = listing.size_m2 || 0;
+
+  if (rooms >= 3 || size >= 65) {
+    return 3;
+  }
+  if (rooms >= 2 || size >= 45) {
+    return 2;
+  }
+  return 1;
+}
+
+/**
+ * Checks if a listing can register at least `requiredCount` CPRs.
+ */
+export function supportsCprCount(listing: Listing, requiredCount: number): boolean {
+  if (requiredCount <= 0) return true;
+  if (listing.cpr_allowed === false) return false;
+  return getMaxCprCapacity(listing) >= requiredCount;
+}
+
+/**
+ * Legacy compatibility helper
+ */
+export function supportsThreeCpr(listing: Listing): boolean {
+  return supportsCprCount(listing, 3);
+}
+
+/**
+ * Calculates a personalized recommendation score (0-100) for a group of `peopleCount` people
+ * on a Working Holiday in Copenhagen.
  */
 export function calculateListingMatch(listing: Listing, peopleCount: number = 3): RecommendationResult {
   let score = 50; // Neutral baseline
   const pros: string[] = [];
   const cons: string[] = [];
 
-  // ==========================================
-  // 1. CPR REGISTRATION (Critical / Excluyente)
-  // ==========================================
-  const canRegister3 = supportsThreeCpr(listing);
+  const isRoomOnly = isSingleRoomListing(listing);
+  const maxCpr = getMaxCprCapacity(listing);
+  const effectiveRooms = getEffectiveRooms(listing);
 
+  // ==========================================
+  // 1. CPR REGISTRATION & CAPACITY COMPLIANCE
+  // ==========================================
   if (listing.cpr_allowed === false) {
     score -= 40;
-    cons.push('Sin registro de CPR (Paso excluyente)');
-  } else if (canRegister3) {
+    cons.push('Sin registro de CPR (Paso excluyente para residencia)');
+  } else if (maxCpr >= peopleCount) {
     score += 25;
-    pros.push('Apto para registrar 3 CPR (Capacidad y espacio verificado)');
+    pros.push(`Permite registrar ${peopleCount} CPR (Capacidad y espacio verificado)`);
   } else if (listing.cpr_allowed === true) {
-    score += 15;
-    pros.push('Permite registro de CPR');
+    if (peopleCount > 1 && maxCpr < peopleCount) {
+      score -= 30;
+      cons.push(`Capacidad insuficiente para registrar ${peopleCount} CPR (Máx. ${maxCpr} CPR)`);
+    } else {
+      score += 15;
+      pros.push('Permite registro de CPR');
+    }
   } else {
     score += 5;
-    pros.push('CPR no especificado (Consultar al arrendador si permite 3 CPR)');
+    pros.push('CPR no especificado (Consultar al arrendador)');
   }
 
   // ==========================================
-  // 2. DURATION OF CONTRACT (Minimum 3 months)
+  // 2. ROOM & PROPERTY TYPE VS GROUP SIZE
+  // ==========================================
+  if (peopleCount > 1 && isRoomOnly) {
+    score -= 45;
+    cons.push(`Habitación individual en piso compartido (No apto para grupo de ${peopleCount})`);
+  } else if (peopleCount === 1 && isRoomOnly) {
+    score += 20;
+    pros.push('Habitación individual privada ideal para 1 persona');
+  } else if (effectiveRooms >= peopleCount) {
+    score += 20;
+    pros.push(`Excelente distribución: ${effectiveRooms} habitaciones para ${peopleCount} personas`);
+  } else if (effectiveRooms >= 2 && peopleCount <= 3) {
+    score += 15;
+    pros.push(`Departamento completo (${effectiveRooms} hab. ${listing.size_m2 ? listing.size_m2 + ' m²' : ''})`);
+  }
+
+  // ==========================================
+  // 3. DURATION OF CONTRACT
   // ==========================================
   const textTitle = (listing.title || '').toLowerCase();
   const isShortTerm = textTitle.includes('1 md') || textTitle.includes('2 md') || textTitle.includes('1 month') || textTitle.includes('2 months');
@@ -72,23 +159,6 @@ export function calculateListingMatch(listing: Listing, peopleCount: number = 3)
     pros.push('Contrato temporal viabilizable (≥ 3 meses)');
   } else {
     score += 5;
-  }
-
-  // ==========================================
-  // 3. CAPACITY & LAYOUT FOR 3 PEOPLE
-  // ==========================================
-  const rooms = listing.rooms || 0;
-  const size = listing.size_m2 || 0;
-
-  if (rooms >= 2 || size >= 55) {
-    score += 20;
-    pros.push(`Espacio adecuado para 3 personas (${rooms ? rooms + ' hab.' : ''} ${size ? size + ' m²' : ''})`);
-  } else if (rooms === 1 && size > 0 && size < 45) {
-    score -= 20;
-    cons.push(`Ajustado para 3 personas (Solo 1 habitación / ${size} m²)`);
-  } else if (size > 0 && size < 40) {
-    score -= 15;
-    cons.push(`Metraje reducido (${size} m²)`);
   }
 
   // ==========================================
@@ -111,7 +181,6 @@ export function calculateListingMatch(listing: Listing, peopleCount: number = 3)
       score += 5;
       pros.push(`Dentro del tope presupuestario (${costPerPerson.toLocaleString('da-DK')} DKK / mes por persona)`);
     } else {
-      // Over 8.000 DKK / person
       score -= 30;
       isOverBudget = true;
       cons.push(`Supera los 8.000 DKK/persona (${costPerPerson.toLocaleString('da-DK')} DKK / mes por persona)`);
@@ -119,7 +188,7 @@ export function calculateListingMatch(listing: Listing, peopleCount: number = 3)
   }
 
   // ==========================================
-  // 5. LOCATION & TRANSIT TO CITY CENTER / JOBS
+  // 5. LOCATION & TRANSIT
   // ==========================================
   const loc = listing.location_name || '';
 
@@ -137,9 +206,9 @@ export function calculateListingMatch(listing: Listing, peopleCount: number = 3)
   // Bound score between 0 and 100
   score = Math.max(0, Math.min(100, score));
 
-  // Hard Cap: If cost per person > 8000 DKK or no CPR, cap score below 80 ("Muy Recomendado")
-  if (isOverBudget || listing.cpr_allowed === false) {
-    score = Math.min(score, 74);
+  // Hard Cap: If over budget, no CPR, or single room for a group, cap score
+  if (isOverBudget || listing.cpr_allowed === false || (peopleCount > 1 && isRoomOnly)) {
+    score = Math.min(score, peopleCount > 1 && isRoomOnly ? 45 : 74);
   }
 
   // Determine Label & Badge Variant

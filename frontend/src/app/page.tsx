@@ -22,7 +22,7 @@ export default function Home() {
     locations: [],
     platforms: [],
     cprOnly: false,
-    threeCprOnly: false,
+    cprMin: null, // Dynamic CPR dropdown filter (null = all, 1, 2, 3)
     furnishedOnly: false,
     periodType: 'all',
     statusFilter: 'all',
@@ -62,7 +62,7 @@ export default function Home() {
           
           {/* Sidebar Filters */}
           <aside className="w-full lg:w-72 lg:sticky lg:top-20 z-10 flex-shrink-0">
-            <FilterBar filters={filters} onFilterChange={setFilters} />
+            <FilterBar filters={filters} onFilterChange={setFilters} peopleCount={peopleCount} />
           </aside>
 
           {/* Main Listings Section */}

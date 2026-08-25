@@ -36,14 +36,15 @@ export interface Filters {
   locations: string[];
   platforms: string[];
 
-  // Phase 2 Advanced Filters
+  // Phase 2 & 3 Advanced Filters
   cprOnly: boolean;
-  threeCprOnly: boolean; // Filter for listings supporting 3 CPR registrations
+  cprMin: number | null; // Filter by minimum CPR capacity: null (all), 1, 2, 3
+  threeCprOnly?: boolean; // legacy backwards-compatibility
   furnishedOnly: boolean;
   periodType: 'all' | 'unlimited' | 'temporary';
   statusFilter: 'all' | 'favorites' | 'new' | 'interested' | 'applied' | 'rejected';
 
-  // Phase 3 Score Filter
+  // Score Filter
   recommendedOnly: boolean;
 }
 
