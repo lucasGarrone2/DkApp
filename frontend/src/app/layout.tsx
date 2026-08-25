@@ -6,8 +6,31 @@ import Footer from '@/components/Footer';
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "DK Rentals — Departamentos en Copenhague",
-  description: "Encuentra tu próximo hogar en Copenhague. Filtra por precio, tamaño, habitaciones y zonas.",
+  metadataBase: new URL('https://dk-app-woad.vercel.app'),
+  title: "DK Rentals — Búsqueda de Alquileres en Copenhague",
+  description: "Proyecto personal y comunitario gratuito para buscar y comparar departamentos en Copenhague (registro CPR, costos por persona, zonas).",
+  openGraph: {
+    title: "DK Rentals — Búsqueda de Alquileres en Copenhague",
+    description: "Herramienta gratuita y comunitaria para buscar y comparar departamentos en Copenhague. Filtros por registro CPR, división de gastos por grupo y zonas.",
+    url: "https://dk-app-woad.vercel.app",
+    siteName: "DK Rentals",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "DK Rentals Copenhagen — Búsqueda de Alquileres para la Comunidad",
+      },
+    ],
+    locale: "es_ES",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DK Rentals — Búsqueda de Alquileres en Copenhague",
+    description: "Herramienta gratuita y comunitaria para buscar alquileres en Copenhague.",
+    images: ["/og-image.jpg"],
+  },
 };
 
 export default function RootLayout({
