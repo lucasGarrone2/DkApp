@@ -17,14 +17,15 @@ export default function LegalPage() {
         <div className="prose prose-sm dark:prose-invert max-w-none space-y-6 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
           
           <section>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">1. Naturaleza del Servicio</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">1. Naturaleza y Propósito del Servicio</h2>
             <p>
-              DK Rentals es un servicio de <strong>indexación, búsqueda y redirección</strong> que agrega metadatos factuales públicos 
-              (precio, tamaño, cantidad de habitaciones, ubicación) de listados de alquiler publicados en portales inmobiliarios de terceros en Copenhague, Dinamarca.
+              DK Rentals es un <strong>proyecto personal, 100% gratuito y sin fines de lucro</strong>, nacido como un experimento por una necesidad propia de búsqueda de alojamiento en Copenhague. Su única finalidad es servir como herramienta comunitaria de apoyo para ayudar a las personas a buscar y comparar viviendas en Dinamarca. 
             </p>
             <p>
-              <strong>No somos un portal inmobiliario, una agencia de alquiler, ni un intermediario.</strong> No intermediamos transacciones, 
-              no recopilamos depósitos, y no verificamos la disponibilidad o legitimidad de los listados.
+              La plataforma actúa únicamente como un servicio de <strong>indexación, búsqueda y redirección</strong> que agrega metadatos factuales públicos (precio, tamaño, habitaciones, ubicación) de listados de alquiler publicados en portales inmobiliarios de terceros.
+            </p>
+            <p>
+              <strong>No es un portal inmobiliario, agencia de alquiler ni intermediario comercial.</strong> No se cobra dinero, no se gestionan reservas, no se cobran depósitos y no persigue ningún fin comercial ni de monetización.
             </p>
           </section>
 

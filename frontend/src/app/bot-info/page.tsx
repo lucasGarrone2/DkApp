@@ -19,9 +19,7 @@ export default function BotInfoPage() {
           <section>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">What is DkApp-Bot?</h2>
             <p>
-              DkApp-Bot is an automated web crawler operated by DK Rentals, a personal project that aggregates publicly available 
-              rental listing metadata in Copenhagen, Denmark. The bot collects only factual metadata (price, size, rooms, location) 
-              and provides a direct link back to the original listing.
+              DkApp-Bot is an automated web crawler operated by DK Rentals, a non-commercial personal project created solely to help community members search for housing in Copenhagen, Denmark. The bot collects only factual metadata (price, size, rooms, location) and provides a direct link back to the original listing.
             </p>
           </section>
 
@@ -83,7 +81,7 @@ export default function BotInfoPage() {
           <section>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Contact</h2>
             <p>
-              Operator: Lucas Garrone<br />
+              Operator: Lucas Garrone (Personal Community Project)<br />
               Email: <a href="mailto:lucasgarrone4@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">lucasgarrone4@gmail.com</a><br />
               Website: <a href="https://dk-app-woad.vercel.app" className="text-blue-600 dark:text-blue-400 hover:underline">dk-app-woad.vercel.app</a>
             </p>

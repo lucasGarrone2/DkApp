@@ -30,9 +30,12 @@ export default function Header({
               <span className="text-[11px] px-2.5 py-0.5 bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold rounded-full border border-blue-500/20">
                 Working Holiday
               </span>
+              <span className="hidden md:inline-block text-[10px] px-2 py-0.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold rounded-full border border-emerald-500/20">
+                Proyecto Personal Sin Fines de Lucro
+              </span>
             </div>
             <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              Copenhague · Búsqueda grupal y registro CPR
+              Copenhague · Herramienta comunitaria para búsqueda grupal y registro CPR
             </p>
           </div>
         </div>

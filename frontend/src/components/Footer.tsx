@@ -7,6 +7,13 @@ export default function Footer() {
     <footer className="mt-auto border-t border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-[#0b1120]/90 backdrop-blur-sm">
       <div className="container mx-auto px-4 sm:px-6 py-6 space-y-4">
         
+        {/* Personal & Community Purpose Banner */}
+        <div className="bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 rounded-xl p-4">
+          <p className="text-xs text-blue-950 dark:text-blue-200 leading-relaxed">
+            <strong>🤝 Proyecto Personal & Comunitario:</strong> DK Rentals es un proyecto personal 100% gratuito y sin fines de lucro, surgido como un experimento fruto de una necesidad propia al buscar departamento en Copenhague. No busca ninguna finalidad comercial ni empresarial; su único objetivo es ayudar a la comunidad (especialmente a quienes llegan a trabajar o estudiar) a facilitar y organizar la búsqueda de alojamiento.
+          </p>
+        </div>
+
         {/* Legal Disclaimer */}
         <div className="bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40 rounded-xl p-4">
           <p className="text-[11px] text-amber-900/80 dark:text-amber-200/80 leading-relaxed">
@@ -40,7 +47,7 @@ export default function Footer() {
         </div>
 
         <p className="text-[10px] text-slate-400 dark:text-slate-600 text-center">
-          {new Date().getFullYear()} DK Rentals — Proyecto personal de búsqueda de alquileres en Copenhague. No afiliado con ningún portal de origen.
+          {new Date().getFullYear()} DK Rentals — Experimento y proyecto personal sin fines de lucro para ayudar a la comunidad a buscar alquileres en Copenhague. No afiliado con ningún portal de origen.
         </p>
       </div>
     </footer>

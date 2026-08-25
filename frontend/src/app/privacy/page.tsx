@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">1. Responsable del Tratamiento</h2>
             <p>
-              DK Rentals es un proyecto personal operado por Lucas Garrone.<br />
+              DK Rentals es un <strong>proyecto personal y comunitario sin fines de lucro</strong> operado por Lucas Garrone con el único fin de ayudar a la búsqueda de alojamiento en Copenhague.<br />
               📧 Contacto: <a href="mailto:lucasgarrone4@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">lucasgarrone4@gmail.com</a>
             </p>
           </section>
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">3. Base Legal del Tratamiento (Art. 6 RGPD)</h2>
             <p>
               La indexación de metadatos factuales de listados inmobiliarios públicos se fundamenta en el <strong>interés legítimo</strong> (Art. 6(1)(f) RGPD) 
-              de facilitar la búsqueda de vivienda en Copenhague mediante la agregación y comparación de información pública de mercado.
+              de facilitar la búsqueda de vivienda en Copenhague mediante la agregación y comparación de información pública de mercado sin fines comerciales.
             </p>
           </section>
 
