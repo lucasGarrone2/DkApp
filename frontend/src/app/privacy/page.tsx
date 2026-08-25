@@ -1,57 +1,79 @@
-import Link from 'next/link';
-
 export const metadata = {
   title: 'Política de Privacidad — DK Rentals',
-  description: 'Política de privacidad y protección de datos de DK Rentals conforme al RGPD.',
+  description: 'Información sobre el tratamiento de datos personales conforme al Reglamento General de Protección de Datos (RGPD / GDPR).',
 };
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-slate-50/70 dark:bg-[#080d1a]">
-      <div className="container mx-auto px-4 sm:px-6 py-12 max-w-3xl">
-        <Link href="/" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold mb-6 inline-block">← Volver al inicio</Link>
-        
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Política de Privacidad</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-8">Última actualización: Agosto 2026 · Conforme al Reglamento General de Protección de Datos (RGPD/GDPR) de la UE</p>
+    <div className="container mx-auto px-4 py-12 max-w-3xl">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 space-y-6 shadow-sm">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Política de Privacidad
+        </h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Conforme al Reglamento (UE) 2016/679 (RGPD / GDPR) · Última actualización: Agosto 2026
+        </p>
 
-        <div className="prose prose-sm dark:prose-invert max-w-none space-y-6 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-          
+        <div className="space-y-6 text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+          <section className="bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-xl p-4">
+            <h2 className="text-base font-bold text-blue-900 dark:text-blue-200 mb-1">
+              🌱 Proyecto Personal Sin Fines de Lucro
+            </h2>
+            <p className="text-xs text-blue-800 dark:text-blue-300">
+              DK Rentals es un proyecto personal, gratuito y de código abierto desarrollado con fines comunitarios. 
+              <strong> No recopilamos datos personales con fines comerciales, no vendemos datos a terceros ni mostramos publicidad.</strong>
+            </p>
+          </section>
+
           <section>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">1. Responsable del Tratamiento</h2>
             <p>
-              DK Rentals es un <strong>proyecto personal y comunitario sin fines de lucro</strong> operado por Lucas Garrone con el único fin de ayudar a la búsqueda de alojamiento en Copenhague.<br />
-              📧 Contacto: <a href="mailto:lucasgarrone4@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">lucasgarrone4@gmail.com</a>
+              DK Rentals es operado de forma independiente como proyecto personal de código abierto. Para cualquier consulta sobre privacidad 
+              o ejercicio de derechos, puede contactar al responsable en: <a href="mailto:lucasgarrone4@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">lucasgarrone4@gmail.com</a>.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">2. Datos que Procesamos</h2>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">2.1 Datos agregados de listados inmobiliarios</h3>
-            <p>Recopilamos exclusivamente <strong>metadatos factuales</strong> de listados de alquiler publicados públicamente en portales inmobiliarios daneses:</p>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>Precio mensual (DKK)</li>
-              <li>Tamaño (m²) y cantidad de habitaciones</li>
-              <li>Barrio / código postal</li>
-              <li>Condiciones del contrato (período, amoblado, registro CPR)</li>
-              <li>URL directa al anuncio original</li>
-            </ul>
-            <p className="mt-2"><strong>NO almacenamos:</strong> fotografías de los listados, nombres de anunciantes, números de teléfono, direcciones de email, ni ningún dato de contacto personal.</p>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">2. Datos que Recopilamos</h2>
+            <div className="space-y-2">
+              <p><strong>A. Datos de listados inmobiliarios (fuentes públicas):</strong></p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Título y descripción del anuncio</li>
+                <li>Precio de alquiler, depósito y costos asociados</li>
+                <li>Ubicación geográfica general (barrio, código postal)</li>
+                <li>Características del inmueble (m², habitaciones, amueblado, condiciones de registro CPR)</li>
+                <li>URL original del anuncio público</li>
+              </ul>
+              <p className="font-semibold text-xs text-slate-500 dark:text-slate-400">
+                Nota: No indexamos ni almacenamos nombres personales, números de teléfono ni direcciones de correo electrónico de los arrendadores.
+              </p>
 
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-4">2.2 Datos de usuarios de la plataforma</h3>
-            <p>Actualmente DK Rentals no requiere registro de usuarios. No recopilamos datos personales de los visitantes de la plataforma más allá de logs técnicos estándar del servidor (dirección IP, tipo de navegador) procesados por Vercel según su propia política de privacidad.</p>
+              <p className="pt-2"><strong>B. Datos de navegación de los usuarios:</strong></p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>No utilizamos cookies de seguimiento publicitario.</li>
+                <li>El almacenamiento local (localStorage) se utiliza exclusivamente para guardar preferencias del usuario (modo oscuro, filtros seleccionados) en su propio dispositivo.</li>
+              </ul>
+            </div>
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">3. Base Legal del Tratamiento (Art. 6 RGPD)</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">3. Base Jurídica del Tratamiento</h2>
             <p>
-              La indexación de metadatos factuales de listados inmobiliarios públicos se fundamenta en el <strong>interés legítimo</strong> (Art. 6(1)(f) RGPD) 
-              de facilitar la búsqueda de vivienda en Copenhague mediante la agregación y comparación de información pública de mercado sin fines comerciales.
+              El tratamiento de datos de listados públicos se fundamenta en el <strong>interés legítimo</strong> (Art. 6.1.f RGPD) 
+              de proporcionar un servicio de indexación y comparación de información pública sobre vivienda para la comunidad.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">4. Fuentes de Datos (Art. 14 RGPD)</h2>
-            <p>Los datos de listados se obtienen de portales inmobiliarios daneses de acceso público. Solo indexamos información disponible sin necesidad de autenticación o suscripción, respetando las directivas robots.txt de cada portal.</p>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">4. Finalidad del Tratamiento</h2>
+            <p>
+              Los datos se procesan exclusivamente para:
+            </p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Permitir la búsqueda y filtrado de opciones de alquiler en Copenhague.</li>
+              <li>Calcular puntuaciones orientativas de compatibilidad (Scoring Algorítmico).</li>
+              <li>Facilitar el acceso al portal original donde se encuentra publicado el anuncio.</li>
+            </ul>
           </section>
 
           <section>
@@ -68,7 +90,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li><strong>Acceso</strong> (Art. 15): Solicitar confirmación de si procesamos datos que le conciernen.</li>
               <li><strong>Rectificación</strong> (Art. 16): Solicitar la corrección de datos inexactos.</li>
-              <li><strong>Supresión</strong> (Art. 17): Solicitar la eliminación de sus datos ("derecho al olvido").</li>
+              <li><strong>Supresión</strong> (Art. 17): Solicitar la eliminación de sus datos (&ldquo;derecho al olvido&rdquo;).</li>
               <li><strong>Oposición</strong> (Art. 21): Oponerse al tratamiento basado en interés legítimo.</li>
               <li><strong>Reclamación</strong>: Tiene derecho a presentar una reclamación ante la autoridad de protección de datos danesa (Datatilsynet) en <a href="https://www.datatilsynet.dk" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">datatilsynet.dk</a>.</li>
             </ul>
@@ -84,10 +106,10 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">8. Cookies</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">8. Modificaciones a esta Política</h2>
             <p>
-              DK Rentals utiliza únicamente cookies técnicas esenciales para el funcionamiento de la plataforma (preferencia de tema oscuro/claro). 
-              No utilizamos cookies de seguimiento, analíticas ni publicitarias.
+              Esta política puede actualizarse periódicamente. La versión más reciente siempre estará disponible en este enlace 
+              con la fecha de última actualización indicada al inicio.
             </p>
           </section>
         </div>

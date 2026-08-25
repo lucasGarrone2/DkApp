@@ -307,7 +307,7 @@ export default function ListingCard({
         {/* Note Preview if exists */}
         {listing.notes && (
           <div className="mb-3.5 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 p-2.5 rounded-xl text-[11px] text-amber-900 dark:text-amber-200">
-            <span className="font-bold">{listing.contacted_by || 'Nota'}:</span> "{listing.notes}"
+            <span className="font-bold">{listing.contacted_by || 'Nota'}:</span> &ldquo;{listing.notes}&rdquo;
           </div>
         )}
 
