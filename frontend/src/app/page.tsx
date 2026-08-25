@@ -29,7 +29,8 @@ export default function Home() {
     recommendedOnly: false,
   });
 
-  const [sort, setSort] = useState<SortOption>('score_desc');
+  // Default sort is price asc (Menor precio a mayor precio)
+  const [sort, setSort] = useState<SortOption>('price_asc');
 
   const {
     listings,

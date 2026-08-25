@@ -76,7 +76,7 @@ export default function FilterBar({ filters, onFilterChange, peopleCount = 3 }: 
         {/* Phase 3: Algorithm Recommendation & Dynamic CPR Filter */}
         <div className="space-y-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
           <h3 className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-            🎯 Match y Capacidad CPR
+            🎯 Evaluación y Capacidad CPR
           </h3>
           
           {/* Dynamic CPR Registration Capacity Dropdown */}
@@ -92,7 +92,7 @@ export default function FilterBar({ filters, onFilterChange, peopleCount = 3 }: 
               )}
             </div>
             <p className="text-[10px] text-blue-700/80 dark:text-blue-300/80 leading-tight">
-              Capacidad legal requerida para tu grupo:
+              Capacidad legal requerida:
             </p>
             <select
               value={filters.cprMin === null ? 'all' : filters.cprMin}
@@ -153,10 +153,10 @@ export default function FilterBar({ filters, onFilterChange, peopleCount = 3 }: 
           </label>
         </div>
 
-        {/* Collaboration & Status Filter */}
+        {/* Status Filter */}
         <div className="pb-4 border-b border-slate-100 dark:border-slate-800/80">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5">
-            👥 Estado de Grupo
+            📌 Estado de Seguimiento
           </h3>
           <div className="grid grid-cols-2 gap-1.5">
             {[

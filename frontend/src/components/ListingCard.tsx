@@ -17,6 +17,7 @@ import {
   generateGoogleMapsRouteUrl,
   generateQuickApplyText,
   generateWhatsAppShareText,
+  cleanDisplayTitle,
 } from '@/utils/format';
 
 interface ListingCardProps {
@@ -44,8 +45,9 @@ export default function ListingCard({
   const isRoomOnly = isSingleRoomListing(listing);
   const effectiveRooms = getEffectiveRooms(listing);
   const maxCpr = getMaxCprCapacity(listing);
+  const displayTitle = cleanDisplayTitle(listing.title);
 
-  // Algorithm scoring for Working Holiday group
+  // Algorithm scoring for Working Holiday applicants
   const match = calculateListingMatch(listing, peopleCount);
 
   const priceFormatted = formatPrice(listing.price_dkk);
@@ -86,7 +88,7 @@ export default function ListingCard({
   };
 
   const handleCopyApply = () => {
-    const text = generateQuickApplyText(listing.title, listing.location_name);
+    const text = generateQuickApplyText(displayTitle, listing.location_name);
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -94,7 +96,7 @@ export default function ListingCard({
 
   const handleShareWhatsApp = () => {
     const text = generateWhatsAppShareText(
-      listing.title,
+      displayTitle,
       listing.url,
       listing.price_dkk,
       moveInCostDkk,
@@ -161,8 +163,8 @@ export default function ListingCard({
       <div className="p-4 sm:p-5 flex flex-col flex-grow">
         
         {/* Title */}
-        <h2 className="text-slate-900 dark:text-white font-bold text-sm sm:text-base leading-snug mb-3 line-clamp-2" title={listing.title}>
-          {listing.title}
+        <h2 className="text-slate-900 dark:text-white font-bold text-sm sm:text-base leading-snug mb-3 line-clamp-2" title={displayTitle}>
+          {displayTitle}
         </h2>
 
         {/* Metric Pills */}
@@ -210,14 +212,16 @@ export default function ListingCard({
           )}
         </div>
 
-        {/* 💵 COST PER PERSON BREAKDOWN BOX (WITH USD) */}
+        {/* 💵 COST BREAKDOWN BOX (WITH USD) */}
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50/70 dark:from-blue-950/40 dark:to-slate-900 p-3 rounded-xl mb-3 space-y-1.5 border border-blue-200/80 dark:border-blue-900/50 shadow-sm">
           <div className="flex justify-between items-center font-bold text-blue-950 dark:text-blue-100">
-            <span className="text-xs">👥 Cada uno paga (÷ {peopleCount}):</span>
+            <span className="text-xs">
+              {peopleCount > 1 ? `👥 Desglose por persona (÷ ${peopleCount}):` : '👤 Costo mensual:'}
+            </span>
             <span className="text-xs text-blue-700 dark:text-blue-400 font-black">{monthlyPerPerson} / mes</span>
           </div>
           <div className="flex justify-between items-center text-[11px] text-slate-600 dark:text-slate-300">
-            <span>🔑 Costo inicial por persona:</span>
+            <span>🔑 Costo inicial {peopleCount > 1 ? 'por persona' : 'total'}:</span>
             <span className="font-bold">{moveInPerPerson} total</span>
           </div>
         </div>
@@ -225,7 +229,7 @@ export default function ListingCard({
         {/* Financial Breakdown (Move-in Cost Total) */}
         <div className="bg-slate-50/80 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800 mb-3 text-xs space-y-1">
           <div className="flex justify-between font-bold text-slate-900 dark:text-white">
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Total Departamento:</span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">Total Propiedad:</span>
             <span className="text-slate-900 dark:text-white font-bold">{moveInCostFormatted} inicial</span>
           </div>
           <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[10px]">
@@ -236,14 +240,14 @@ export default function ListingCard({
           </div>
         </div>
 
-        {/* Expandable Group Recommendation Pros & Cons */}
+        {/* Expandable Recommendation Pros & Cons */}
         <div className="mb-4">
           <button
             onClick={() => setShowScoreDetails(!showScoreDetails)}
             className="w-full text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-between py-1 border-b border-dashed border-slate-200 dark:border-slate-800 transition-colors"
           >
             <span className="flex items-center gap-1">
-              🎯 Evaluación del grupo ({match.pros.length} pros / {match.cons.length} contras)
+              🎯 Evaluación del alojamiento ({match.pros.length} pros / {match.cons.length} contras)
             </span>
             <span className="text-xs">{showScoreDetails ? '▲' : '▼'}</span>
           </button>
@@ -275,7 +279,7 @@ export default function ListingCard({
           )}
         </div>
 
-        {/* Group Collaboration Bar: Status & Notes */}
+        {/* Status & Notes Bar */}
         <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800 mb-3.5">
           <select
             value={listing.status}
@@ -300,10 +304,10 @@ export default function ListingCard({
           </button>
         </div>
 
-        {/* Group Note Preview if exists */}
+        {/* Note Preview if exists */}
         {listing.notes && (
           <div className="mb-3.5 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 p-2.5 rounded-xl text-[11px] text-amber-900 dark:text-amber-200">
-            <span className="font-bold">{listing.contacted_by || 'Amigo'}:</span> "{listing.notes}"
+            <span className="font-bold">{listing.contacted_by || 'Nota'}:</span> "{listing.notes}"
           </div>
         )}
 
@@ -326,7 +330,7 @@ export default function ListingCard({
             <button
               onClick={handleShareWhatsApp}
               className="py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1"
-              title="Compartir resumen formateado por WhatsApp al grupo"
+              title="Compartir resumen formateado por WhatsApp"
             >
               💬 WhatsApp
             </button>
@@ -361,14 +365,14 @@ export default function ListingCard({
 
       </div>
 
-      {/* Group Notes Modal */}
+      {/* Notes Modal */}
       {showNotesModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
             
             <div className="flex justify-between items-center">
               <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                💬 Bitácora del Grupo
+                💬 Bitácora y Notas
               </h3>
               <button
                 onClick={() => setShowNotesModal(false)}
@@ -379,12 +383,12 @@ export default function ListingCard({
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Guarda notas compartidas para este departamento (ej. quién contactó al dueño o qué respondió).
+              Guarda notas de seguimiento para este departamento (ej. fecha de visita o respuesta del arrendador).
             </p>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Tu nombre / Nombre de quien envió el mensaje:
+                Nombre de contacto / Quién escribió:
               </label>
               <input
                 type="text"
@@ -401,7 +405,7 @@ export default function ListingCard({
               </label>
               <textarea
                 rows={3}
-                placeholder="Ej. Envié mensaje por DBA el lunes. Respondieron que se puede visitar el jueves a las 18hs."
+                placeholder="Ej. Contactado por el portal. Respondieron que se puede visitar el jueves a las 18hs."
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
