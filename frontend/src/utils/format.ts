@@ -51,26 +51,35 @@ const KNOWN_CPH_AREAS = [
   'Indre By', 'Vesterbro', 'Nørrebro', 'Østerbro', 'Frederiksberg', 'Amager',
   'Valby', 'Vanløse', 'Nordvest', 'Sydhavn', 'Christianshavn', 'Gentofte',
   'Hellerup', 'Lyngby', 'Virum', 'Farum', 'Brønshøj', 'Rødovre', 'Hvidovre',
-  'Glostrup', 'Ballerup', 'Herlev', 'Kastrup', 'Tårnby'
+  'Glostrup', 'Ballerup', 'Herlev', 'Kastrup', 'Tårnby', 'Roskilde', 'Risø',
+  'Aarhus'
 ];
 
 /**
- * Extracts a valid geocodable neighborhood / town name for Google Maps
+ * Extracts a valid geocodable neighborhood / city name for Google Maps
  */
 export function cleanLocationName(location: string | null | undefined): string {
   if (!location) return 'Copenhagen';
   const text = location.trim();
 
+  if (/\baarhus\b/i.test(text)) {
+    return 'Aarhus, Denmark';
+  }
+
+  if (/\b(roskilde|risø)\b/i.test(text)) {
+    return 'Roskilde, Denmark';
+  }
+
   for (const area of KNOWN_CPH_AREAS) {
     if (new RegExp(`\\b${area}\\b`, 'i').test(text)) {
-      return `${area}, Copenhagen`;
+      return `${area}, Denmark`;
     }
   }
 
-  // Check for postal codes (e.g. 1000 - 2999)
-  const postMatch = text.match(/\b(1\d{3}|2\d{3})\b/);
+  // Check for postal codes
+  const postMatch = text.match(/\b(1\d{3}|2\d{3}|4\d{3}|8\d{3})\b/);
   if (postMatch) {
-    return `${postMatch[1]} Copenhagen`;
+    return `${postMatch[1]} Denmark`;
   }
 
   return 'Copenhagen, Denmark';
@@ -118,15 +127,16 @@ export function calculateCostPerPerson(amount: number | null, peopleCount: numbe
 }
 
 /**
- * Generates Google Maps bicycle route to Copenhagen Central Station (København H)
+ * Generates Google Maps bicycle route to Central Station (København H or Aarhus H)
  * using clean geocodable location origins.
  */
 export function generateGoogleMapsRouteUrl(locationName: string | null, postalCode: string | null): string {
-  const destination = 'København H, Denmark';
+  const isAarhus = locationName?.toLowerCase().includes('aarhus') || (postalCode && parseInt(postalCode, 10) >= 8000 && parseInt(postalCode, 10) <= 8999);
+  const destination = isAarhus ? 'Aarhus H, Denmark' : 'København H, Denmark';
   let origin = cleanLocationName(locationName);
 
   if (postalCode) {
-    origin = `${postalCode} Copenhagen, Denmark`;
+    origin = `${postalCode} Denmark`;
   }
 
   return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=bicycling`;

@@ -32,6 +32,10 @@ export class KvikboligScraper extends BaseScraper {
     'https://kvikbolig.dk/rental-property/amager',
     'https://kvikbolig.dk/rental-property/vesterbro',
     'https://kvikbolig.dk/rental-property/indre-by-kobenhavn',
+    'https://kvikbolig.dk/rental-property/lyngby-taarbaek',
+    'https://kvikbolig.dk/rental-property/ballerup',
+    'https://kvikbolig.dk/rental-property/roskilde',
+    'https://kvikbolig.dk/rental-property/aarhus',
   ];
 
   constructor(browser: Browser) {

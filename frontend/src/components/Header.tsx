@@ -1,6 +1,7 @@
 'use client';
 
 import ThemeToggle from '@/components/ThemeToggle';
+import DkFlag from '@/components/DkFlag';
 
 interface HeaderProps {
   peopleCount: number;
@@ -19,8 +20,8 @@ export default function Header({
         
         {/* Brand & Subtitle */}
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-blue-500/20 border border-blue-400/20">
-            🇩🇰
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-blue-500/20 border border-blue-400/20 overflow-hidden p-2">
+            <DkFlag className="w-full h-full rounded-[3px] shadow-sm" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -35,7 +36,7 @@ export default function Header({
               </span>
             </div>
             <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              Copenhague · Herramienta comunitaria para búsqueda grupal y registro CPR
+              Copenhague y Dinamarca · Herramienta comunitaria para búsqueda y registro CPR
             </p>
           </div>
         </div>
@@ -58,14 +59,14 @@ export default function Header({
               className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold rounded-lg px-2 py-0.5 outline-none cursor-pointer border border-slate-200 dark:border-slate-700 text-xs hover:border-blue-500 transition-colors"
             >
               <option value={1}>1 persona</option>
-              <option value={2}>2 personas</option>
+              <option value={2}>2 personas (Pareja / Amigos)</option>
               <option value={3}>3 personas (Grupo)</option>
-              <option value={4}>4 personas</option>
             </select>
           </div>
 
           {/* Theme Toggle */}
           <ThemeToggle />
+
         </div>
 
       </div>

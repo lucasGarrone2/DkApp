@@ -1,11 +1,12 @@
 /**
- * Normalizes location strings to canonical neighborhood names.
+ * Normalizes location strings to canonical neighborhood & city names.
  * Uses postal code mapping first if provided, then falls back to text parsing.
  */
 export function normalizeLocation(text: string, postalCode?: string): string {
   if (postalCode) {
     const code = parseInt(postalCode, 10);
     if (!isNaN(code)) {
+      // Copenhagen Districts
       if (code >= 1000 && code <= 1499) return 'Indre By';
       if (code >= 1500 && code <= 1799) return 'Vesterbro';
       if ((code >= 1800 && code <= 1999) || code === 2000) return 'Frederiksberg';
@@ -18,11 +19,34 @@ export function normalizeLocation(text: string, postalCode?: string): string {
       if (code === 2600) return 'Glostrup';
       if (code === 2700) return 'Brønshøj';
       if (code === 2720) return 'Vanløse';
+      
+      // Surrounding Cities / Municipalities
+      if (code === 2750) return 'Ballerup';
+      if (code === 2800) return 'Lyngby';
+      if (code === 4000) return 'Roskilde / Risø';
+
+      // Aarhus
+      if (code >= 8000 && code <= 8999) return 'Aarhus';
     }
   }
 
   const normalized = text.toLowerCase();
   
+  // Specific Cities
+  if (normalized.includes('aarhus') || normalized.includes('århus')) {
+    return 'Aarhus';
+  }
+  if (normalized.includes('lyngby') || normalized.includes('kongens lyngby') || normalized.includes('taarbæk') || normalized.includes('2800')) {
+    return 'Lyngby';
+  }
+  if (normalized.includes('ballerup') || normalized.includes('2750')) {
+    return 'Ballerup';
+  }
+  if (normalized.includes('roskilde') || normalized.includes('risø') || normalized.includes('4000')) {
+    return 'Roskilde / Risø';
+  }
+
+  // Copenhagen Neighborhoods
   if (normalized.includes('indre by') || normalized.includes('københavn k') || normalized.includes('kbh k')) {
     return 'Indre By';
   }

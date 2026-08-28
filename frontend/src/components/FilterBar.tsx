@@ -2,6 +2,7 @@
 
 import { Filters } from '@/types/listing';
 import { useState } from 'react';
+import DkFlag from '@/components/DkFlag';
 
 interface FilterBarProps {
   filters: Filters;
@@ -9,9 +10,13 @@ interface FilterBarProps {
   peopleCount?: number;
 }
 
-const NEIGHBORHOODS = [
-  'Vesterbro', 'Nørrebro', 'Østerbro', 'Amager', 
-  'Frederiksberg', 'Indre By', 'Valby', 'NV', 'Brønshøj/Vanløse'
+const CITIES = [
+  'Aarhus', 'Lyngby', 'Ballerup', 'Roskilde / Risø'
+];
+
+const CPH_NEIGHBORHOODS = [
+  'Indre By', 'Vesterbro', 'Nørrebro', 'Østerbro', 
+  'Frederiksberg', 'Amager', 'Valby', 'Nordvest', 'Vanløse'
 ];
 
 export default function FilterBar({ filters, onFilterChange, peopleCount = 3 }: FilterBarProps) {
@@ -73,7 +78,7 @@ export default function FilterBar({ filters, onFilterChange, peopleCount = 3 }: 
           </button>
         </div>
 
-        {/* Phase 3: Algorithm Recommendation & Dynamic CPR Filter */}
+        {/* Algorithm Recommendation & Dynamic CPR Filter */}
         <div className="space-y-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
           <h3 className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             🎯 Evaluación y Capacidad CPR
@@ -124,8 +129,9 @@ export default function FilterBar({ filters, onFilterChange, peopleCount = 3 }: 
 
         {/* Phase 2: Denmark Specific Toggles */}
         <div className="space-y-2.5 pb-4 border-b border-slate-100 dark:border-slate-800/80">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            🇩🇰 Filtros Dinamarca
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+            <DkFlag className="w-3.5 h-2.5 rounded-[1px] m-0" />
+            <span>Filtros Dinamarca</span>
           </h3>
 
           <label className="flex items-center justify-between cursor-pointer group py-1">
@@ -268,13 +274,52 @@ export default function FilterBar({ filters, onFilterChange, peopleCount = 3 }: 
           />
         </div>
 
-        {/* Neighborhoods */}
+        {/* Ciudades / Áreas Específicas */}
+        <div className="pb-4 border-b border-slate-100 dark:border-slate-800/80">
+          <div className="flex items-center justify-between mb-2.5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+              📍 Ciudades / Comunas
+            </h3>
+            {filters.locations.some(l => CITIES.includes(l)) && (
+              <span className="text-[10px] bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold px-1.5 py-0.5 rounded-md">
+                Filtro activo
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {CITIES.map(city => (
+              <button
+                key={city}
+                onClick={() => toggleArrayItem('locations', city)}
+                className={`px-3 py-1.5 text-xs rounded-xl border transition-all font-bold flex items-center gap-1.5 ${
+                  filters.locations.includes(city)
+                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-500/20'
+                    : 'bg-blue-50/70 dark:bg-blue-950/40 border-blue-200/80 dark:border-blue-900/50 text-blue-900 dark:text-blue-200 hover:border-blue-300 dark:hover:border-blue-700'
+                }`}
+              >
+                {city === 'Aarhus' ? (
+                  <>
+                    <DkFlag className="w-3.5 h-2.5 rounded-[1px] m-0" />
+                    <span>Aarhus</span>
+                  </>
+                ) : (
+                  <>
+                    <span>📍</span>
+                    <span>{city}</span>
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Barrios Copenhague */}
         <div>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5">
-            Zonas / Barrios
+            🏙️ Barrios (Copenhague)
           </h3>
           <div className="flex flex-wrap gap-1.5">
-            {NEIGHBORHOODS.map(zone => (
+            {CPH_NEIGHBORHOODS.map(zone => (
               <button
                 key={zone}
                 onClick={() => toggleArrayItem('locations', zone)}

@@ -36,6 +36,10 @@ export class HousingAnywhereScraper extends BaseScraper {
     'https://housinganywhere.com/s/Vesterbro--Denmark',
     'https://housinganywhere.com/s/N%C3%B8rrebro--Denmark',
     'https://housinganywhere.com/s/Østerbro--Denmark',
+    'https://housinganywhere.com/s/Lyngby--Denmark',
+    'https://housinganywhere.com/s/Ballerup--Denmark',
+    'https://housinganywhere.com/s/Roskilde--Denmark',
+    'https://housinganywhere.com/s/Aarhus--Denmark',
   ];
 
   constructor(browser: Browser) {
