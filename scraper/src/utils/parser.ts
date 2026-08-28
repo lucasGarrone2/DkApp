@@ -179,19 +179,12 @@ export function parseFurnished(text: string | null | undefined): boolean {
 /**
  * PHASE 2: Detects rental period type ('unlimited' vs 'temporary' vs 'unknown')
  */
-export function parseRentalPeriod(text: string | null | undefined): 'unlimited' | 'temporary' | 'unknown' {
-  if (!text) return 'unknown';
+export function parseRentalPeriod(
+  text: string | null | undefined,
+  defaultPeriod: 'unlimited' | 'temporary' | 'unknown' = 'unlimited'
+): 'unlimited' | 'temporary' | 'unknown' {
+  if (!text) return defaultPeriod;
   const t = text.toLowerCase();
-
-  if (
-    t.includes('ubegrænset') ||
-    t.includes('unlimited') ||
-    t.includes('tidsubegrænset') ||
-    t.includes('permanent') ||
-    t.includes('long term')
-  ) {
-    return 'unlimited';
-  }
 
   if (
     t.includes('tidsbegrænset') ||
@@ -205,7 +198,17 @@ export function parseRentalPeriod(text: string | null | undefined): 'unlimited' 
     return 'temporary';
   }
 
-  return 'unknown';
+  if (
+    t.includes('ubegrænset') ||
+    t.includes('unlimited') ||
+    t.includes('tidsubegrænset') ||
+    t.includes('permanent') ||
+    t.includes('long term')
+  ) {
+    return 'unlimited';
+  }
+
+  return defaultPeriod;
 }
 
 /**

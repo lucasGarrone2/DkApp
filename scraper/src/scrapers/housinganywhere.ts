@@ -167,7 +167,7 @@ export class HousingAnywhereScraper extends BaseScraper {
           // Phase 2 extractions
           const cprAllowed = parseCprAllowed(rawText);
           const isFurnished = parseFurnished(rawText) || true; // HousingAnywhere listings are predominantly furnished
-          const rentalPeriodType = parseRentalPeriod(rawText);
+          const rentalPeriodType = parseRentalPeriod(rawText, 'temporary');
           const prepaidRentDkk = parsePrepaidRent(rawText, price);
 
           const listing: ListingInput = {
